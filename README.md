@@ -1,6 +1,6 @@
 # The dasm macro assembler (for JavaScript)
 
-This is an [emscripten](https://github.com/kripken/emscripten)-compiled version of the [dasm macro assembler](http://dasm-dillon.sourceforge.net/). It was created so 6502 assembkly code could be compiled from JavaScript code. More especifically, it can be used to create Atari VCS 2600 and Fairchild Channel F roms from its macro assembly source code.
+This is an [emscripten](https://github.com/kripken/emscripten)-compiled version of the [dasm macro assembler](http://dasm-dillon.sourceforge.net/). It was created so 6502 assembly code could be compiled from JavaScript code. More especifically, it can be used to create Atari VCS 2600 and Fairchild Channel F roms from its macro assembly source code.
 
 ## Technical information
 
@@ -31,7 +31,7 @@ const src = "...";
 // Run with any number of parameters
 const result = dasm(src, "-f1", "-ofile.out", "-lfile.lst", ...);
 
-// Read the output as a binarty (int array)
+// Read the output as a binary (int array)
 const ROM = result.FS.readFile("file.out");
 ```
 
