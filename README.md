@@ -47,7 +47,7 @@ Check the [emscripten FileSystem](https://kripken.github.io/emscripten-site/docs
 * Expose the module initialization options
 * TypeScript definitions
 
-Constributions are welcome.
+Contributions are welcome.
 
 ## License
 
