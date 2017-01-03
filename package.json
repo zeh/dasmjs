@@ -1,0 +1,27 @@
+{
+  "name": "dasm",
+  "version": "1.0.0",
+  "description": "An emscripten-compiled version of the dasm macro assembler",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeh/dasmjs.git"
+  },
+  "keywords": [
+    "dasm",
+    "assembler",
+    "assembly",
+    "emscripten",
+    "atari",
+    "6502"
+  ],
+  "author": "Zeh Fernando",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/zeh/dasmjs/issues"
+  },
+  "homepage": "https://github.com/zeh/dasmjs#readme"
+}
