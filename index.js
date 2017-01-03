@@ -28,5 +28,6 @@ module.exports = function() {
 	var filename = "in.a";
 	FS.writeFile(filename, src);
 	var args = [filename].concat(Array.prototype.slice.call(arguments).slice(1));
+	Module.callMain(args);
 	return Module;
 }
