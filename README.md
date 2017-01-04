@@ -92,6 +92,7 @@ Check the [emscripten FileSystem](https://kripken.github.io/emscripten-site/docs
 * Expose the module initialization options
 * TypeScript definitions
 * Real tests with CI
+* Include machine target files (vcs.h, atari.h, channel f, etc)
 * Command-line package (`dasm-cli`)
 
 Contributions are welcome.
