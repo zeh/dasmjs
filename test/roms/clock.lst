@@ -1,0 +1,514 @@
+------- FILE clock.asm LEVEL 1 PASS 2
+      1  10000 ????						; http://everything2.com/title/An+example+of+Atari+2600+source+code
+      2  10000 ????						; --------------------------------------------
+      3  10000 ????				       processor	6502
+      4  10000 ????
+      5  10000 ????		00 00	    VSYNC      =	$00
+      6  10000 ????		00 01	    VBLANK     =	$01
+      7  10000 ????		00 02	    WSYNC      =	$02
+      8  10000 ????		00 04	    NUSIZ0     =	$04
+      9  10000 ????		00 05	    NUSIZ1     =	$05
+     10  10000 ????		00 08	    COLUPF     =	$08
+     11  10000 ????		00 09	    COLUBK     =	$09
+     12  10000 ????		00 0d	    PF0        =	$0D
+     13  10000 ????		00 0e	    PF1        =	$0E
+     14  10000 ????		00 0f	    PF2        =	$0F
+     15  10000 ????		02 80	    SWCHA      =	$280
+     16  10000 ????		02 84	    INTIM      =	$284
+     17  10000 ????		02 96	    TIM64T     =	$296
+     18  10000 ????		00 0a	    CTRLPF     =	$0A
+     19  10000 ????		00 06	    COLUP0     =	$06
+     20  10000 ????		00 07	    COLUP1     =	$07
+     21  10000 ????		00 1b	    GP0        =	$1B
+     22  10000 ????		00 1c	    GP1        =	$1C
+     23  10000 ????		00 2a	    HMOVE      =	$2a
+     24  10000 ????		00 10	    RESP0      =	$10
+     25  10000 ????		00 11	    RESP1      =	$11
+     26  10000 ????
+     27  10000 ????						;RAM
+     28  10000 ????
+     29  10000 ????		00 80	    TEMP       =	$80	;2 bytes for temporary data
+     30  10000 ????		00 82	    SECS       =	$82	;seconds counter
+     31  10000 ????		00 83	    MINS       =	$83	;minutes counter
+     32  10000 ????		00 84	    HOURS      =	$84	;hours counter
+     33  10000 ????		00 85	    JOYDEL     =	$85	;joystick delay variable
+     34  10000 ????		00 86	    JOY1ST     =	$86	;joystick first move variable
+     35  10000 ????		00 87	    SPRITEA    =	$87	;8 bytes for the first sprite
+     36  10000 ????		00 8f	    SPRITEB    =	$8F	;8 bytes for the second sprite
+     37  10000 ????		00 97	    RMINS      =	$97	;real minutes
+     38  10000 ????		00 98	    RHOURS     =	$98	;real hours
+     39  10000 ????		00 99	    FRAMES     =	$99	;frames counter
+     40  10000 ????
+     41  f000					      org	$F000
+     42  f000
+     43  f000		       78	   start      SEI
+     44  f001		       d8		      CLD
+     45  f002		       a2 ff		      LDX	#$FF
+     46  f004		       9a		      TXS
+     47  f005		       a9 00		      LDA	#$00
+     48  f007
+     49  f007		       95 00	   zero       STA	$00,X	;looks familiar, right?
+     50  f009		       ca		      DEX		;typical zeroing routine
+     51  f00a		       d0 fb		      BNE	zero
+     52  f00c
+     53  f00c		       a9 01		      lda	#$01	;now we set up all our variables
+     54  f00e		       85 0a		      sta	CTRLPF
+     55  f010		       a9 0c		      lda	#$0C	;set our starting time at 12:00
+     56  f012		       85 84		      sta	HOURS	;just like a VCR, eh? Except it doesn't blink
+     57  f014		       a9 3c		      lda	#$3C	;00 minutes
+     58  f016		       85 83		      sta	MINS
+     59  f018		       a9 ca		      lda	#$ca	;nice pretty green for our sprites
+     60  f01a		       85 06		      sta	COLUP0
+     61  f01c		       85 07		      sta	COLUP1
+     62  f01e		       a9 07		      lda	#$07	;make them good and fat
+     63  f020		       85 04		      sta	NUSIZ0
+     64  f022		       85 05		      sta	NUSIZ1
+     65  f024		       a9 3c		      lda	#$3C	;initialize the frame and seconds counters
+     66  f026		       85 99		      sta	FRAMES
+     67  f028		       85 82		      sta	SECS
+     68  f02a
+     69  f02a		       20 39 f0    main       JSR	vertb	;main loop
+     70  f02d		       20 55 f0 	      JSR	time
+     71  f030		       20 71 f1 	      JSR	draw
+     72  f033		       20 cc f1 	      JSR	clear
+     73  f036		       4c 2a f0 	      JMP	main
+     74  f039
+     75  f039		       a2 00	   vertb      LDX	#$00	;vertical blank, We all know what this is about
+     76  f03b		       a9 02		      LDA	#$02
+     77  f03d		       85 02		      STA	WSYNC
+     78  f03f		       85 02		      STA	WSYNC
+     79  f041		       85 02		      STA	WSYNC
+     80  f043		       85 00		      STA	VSYNC
+     81  f045		       85 02		      STA	WSYNC
+     82  f047		       85 02		      STA	WSYNC
+     83  f049		       a9 2c		      LDA	#$2C
+     84  f04b		       8d 96 02 	      STA	TIM64T
+     85  f04e		       a9 00		      LDA	#$00
+     86  f050		       85 02		      STA	WSYNC
+     87  f052		       85 00		      STA	VSYNC
+     88  f054		       60		      RTS
+     89  f055
+     90  f055		       a0 06	   time       ldy	#06	;just load Y ahead of time for #of sprite lines
+     91  f057		       a9 3c		      lda	#$3C	;60
+     92  f059		       38		      sec
+     93  f05a		       e5 83		      sbc	MINS	;subtract the clock minutes from 60 to get the
+     94  f05c		       85 97		      sta	RMINS	;real minutes since clock counts down
+     95  f05e		       c9 00		      cmp	#$00	;see if it's 00 minutes
+     96  f060		       f0 14		      beq	min0
+     97  f062		       c9 32		      cmp	#$32	;see if it's more than 50 minutes
+     98  f064		       10 20		      bpl	min5
+     99  f066		       c9 28		      cmp	#$28	;see if it's more than 40 minutes
+    100  f068		       10 2c		      bpl	min4
+    101  f06a		       c9 1e		      cmp	#$1E	;see if it's more than 30 minutes
+    102  f06c		       10 38		      bpl	min3
+    103  f06e		       c9 14		      cmp	#$14	;see if it's more than 20 minutes
+    104  f070		       10 44		      bpl	min2
+    105  f072		       c9 0a		      cmp	#$0A	;see if it's more than 10 minutes
+    106  f074		       10 50		      bpl	min1
+    107  f076
+    108  f076		       b9 a6 f2    min0       lda	zeros,y	;minutes must be less than 10 so load 00 sprite
+    109  f079		       29 f0		      and	#$F0	;strip the first 4 bits
+    110  f07b		       99 87 00 	      sta	SPRITEA,y	;store it to sprite A memory
+    111  f07e		       88		      dey
+    112  f07f		       10 f5		      bpl	min0	;get next sprite line
+    113  f081		       a9 00		      lda	#$00	;less than 10 minutes
+    114  f083		       4c d3 f0 	      jmp	minload	;go to where we load the first 4 bits of sprite
+    115  f086
+    116  f086		       b9 c9 f2    min5       lda	fives,y	;minutes must be 50+ so load 55 sprite
+    117  f089		       29 f0		      and	#$F0	;strip 1st four bits
+    118  f08b		       99 87 00 	      sta	SPRITEA,y	;store it to sprite A memory
+    119  f08e		       88		      dey
+    120  f08f		       10 f5		      bpl	min5	;get next sprite line
+    121  f091		       a9 32		      lda	#$32	;50+ minutes - you'll need this number later to
+    122  f093		       4c d3 f0 	      jmp	minload	;load the second half the sprite data
+    123  f096
+    124  f096		       b9 c2 f2    min4       lda	fours,y	;minutes must be 40+
+    125  f099		       29 f0		      and	#$F0
+    126  f09b		       99 87 00 	      sta	SPRITEA,y
+    127  f09e		       88		      dey
+    128  f09f		       10 f5		      bpl	min4
+    129  f0a1		       a9 28		      lda	#$28	;40+ minutes
+    130  f0a3		       4c d3 f0 	      jmp	minload
+    131  f0a6
+    132  f0a6		       b9 bb f2    min3       lda	threes,y	;minutes must be 30+
+    133  f0a9		       29 f0		      and	#$F0
+    134  f0ab		       99 87 00 	      sta	SPRITEA,y
+    135  f0ae		       88		      dey
+    136  f0af		       10 f5		      bpl	min3
+    137  f0b1		       a9 1e		      lda	#$1E	;30+ minutes
+    138  f0b3		       4c d3 f0 	      jmp	minload
+    139  f0b6
+    140  f0b6		       b9 b4 f2    min2       lda	twos,y	;minutes must be 20+
+    141  f0b9		       29 f0		      and	#$F0
+    142  f0bb		       99 87 00 	      sta	SPRITEA,y
+    143  f0be		       88		      dey
+    144  f0bf		       10 f5		      bpl	min2
+    145  f0c1		       a9 14		      lda	#$14
+    146  f0c3		       4c d3 f0 	      jmp	minload	;20+ minutes
+    147  f0c6
+    148  f0c6		       b9 ad f2    min1       lda	ones,y	;minutes must be 10+
+    149  f0c9		       29 f0		      and	#$F0
+    150  f0cb		       99 87 00 	      sta	SPRITEA,y
+    151  f0ce		       88		      dey
+    152  f0cf		       10 f5		      bpl	min1
+    153  f0d1		       a9 0a		      lda	#$0A	;10+ minutes
+    154  f0d3
+    155  f0d3		       85 80	   minload    STA	TEMP	;the accumulator had the 10s of minutes
+    156  f0d5		       a5 97		      LDA	RMINS	;now we subtract the 10s minutes from the real
+    157  f0d7		       38		      sec		;minutes to get the 1s minutes to act as a pointer
+    158  f0d8		       e5 80		      SBC	TEMP	;for the data tables for 2nd half of sprite
+    159  f0da		       0a		      ASL		;double the number
+    160  f0db		       aa		      TAX
+    161  f0dc		       bd 5d f1 	      LDA	numblk,x	;load the first half of the sprite data address
+    162  f0df		       85 80		      sta	TEMP
+    163  f0e1		       bd 5e f1 	      lda	numblk+1,x	;load the second half of the sprite table address
+    164  f0e4		       85 81		      sta	TEMP+1
+    165  f0e6
+    166  f0e6		       a0 06		      ldy	#$06	;number of lines in the sprite (-1)
+    167  f0e8		       b1 80	   msload     lda	(TEMP),y	;get the sprite data
+    168  f0ea		       29 0f		      and	#$0F	;strip off the last 4 bits
+    169  f0ec		       19 87 00 	      ora	SPRITEA,y	;combine the 1st half with the 2nd half
+    170  f0ef		       99 87 00 	      sta	SPRITEA,y	;put it back in the sprite memory
+    171  f0f2		       88		      dey
+    172  f0f3		       10 f3		      bpl	msload	;get the next line of data
+    173  f0f5
+    174  f0f5		       a0 06		      ldy	#$06	;preload number of sprite lines (-1)
+    175  f0f7		       a9 18		      lda	#$18	;24 hours
+    176  f0f9		       38		      sec
+    177  f0fa		       e5 84		      SBC	HOURS	;subtract the counter hours to get
+    178  f0fc		       85 98		      STA	RHOURS	;the real hours value
+    179  f0fe		       c9 00		      cmp	#$00	;see if it's 12:00 am
+    180  f100		       f0 08		      beq	hour0
+    181  f102		       c9 14		      cmp	#$14	;see if it's 20+ hours
+    182  f104		       10 24		      bpl	hour2
+    183  f106		       c9 0a		      cmp	#$0A	;see if it's 10+ hours
+    184  f108		       10 10		      bpl	hour1
+    185  f10a
+    186  f10a		       b9 a6 f2    hour0      lda	zeros,y	;load the zeros sprite data
+    187  f10d		       29 f0		      and	#$F0	;strip the 1st four bits
+    188  f10f		       99 8f 00 	      sta	SPRITEB,y	;store to the 2nd sprite memory
+    189  f112		       88		      dey
+    190  f113		       10 f5		      bpl	hour0
+    191  f115		       a9 00		      lda	#$00	;same deal as with the minutes
+    192  f117		       4c 3a f1 	      jmp	loadhrs	;but now we load the second half of the hours data
+    193  f11a
+    194  f11a		       b9 ad f2    hour1      lda	ones,y
+    195  f11d		       29 f0		      and	#$F0
+    196  f11f		       99 8f 00 	      sta	SPRITEB,y
+    197  f122		       88		      dey
+    198  f123		       10 f5		      bpl	hour1
+    199  f125		       a9 0a		      lda	#$0A
+    200  f127		       4c 3a f1 	      jmp	loadhrs
+    201  f12a
+    202  f12a		       b9 b4 f2    hour2      lda	twos,y
+    203  f12d		       29 f0		      and	#$F0
+    204  f12f		       99 8f 00 	      sta	SPRITEB,y
+    205  f132		       88		      dey
+    206  f133		       10 f5		      bpl	hour2
+    207  f135		       a9 14		      lda	#$14
+    208  f137		       4c 3a f1 	      jmp	loadhrs
+    209  f13a
+    210  f13a		       85 80	   loadhrs    STA	TEMP
+    211  f13c		       a5 98		      LDA	RHOURS
+    212  f13e		       38		      sec
+    213  f13f		       e5 80		      SBC	TEMP
+    214  f141		       0a		      asl
+    215  f142		       aa		      tax
+    216  f143		       bd 5d f1 	      lda	numblk,x
+    217  f146		       85 80		      sta	TEMP
+    218  f148		       bd 5e f1 	      lda	numblk+1,x
+    219  f14b		       85 81		      sta	TEMP+1
+    220  f14d
+    221  f14d		       a0 06		      ldy	#$06
+    222  f14f		       b1 80	   hsload     lda	(TEMP),y
+    223  f151		       29 0f		      and	#$0F
+    224  f153		       19 8f 00 	      ora	SPRITEB,y
+    225  f156		       99 8f 00 	      sta	SPRITEB,y
+    226  f159		       88		      dey
+    227  f15a		       10 f3		      bpl	hsload
+    228  f15c		       60		      rts
+    229  f15d
+    230  f15d		       a6 f2	   numblk     .word.w	zeros	;where all the sprites are at
+    231  f15f		       ad f2		      .word.w	ones
+    232  f161		       b4 f2		      .word.w	twos
+    233  f163		       bb f2		      .word.w	threes
+    234  f165		       c2 f2		      .word.w	fours
+    235  f167		       c9 f2		      .word.w	fives
+    236  f169		       d0 f2		      .word.w	sixes
+    237  f16b		       d7 f2		      .word.w	sevens
+    238  f16d		       de f2		      .word.w	eights
+    239  f16f		       e5 f2		      .word.w	nines
+    240  f171
+    241  f171		       ad 84 02    draw       LDA	INTIM	;check to see if it's time to draw a frame
+    242  f174		       d0 fb		      BNE	draw
+    243  f176		       85 02		      sta	WSYNC
+    244  f178		       85 2a		      sta	HMOVE
+    245  f17a		       85 01		      sta	VBLANK	;turn the screen on!
+    246  f17c
+    247  f17c							;insert  display kernal
+    248  f17c
+    249  f17c		       a2 3f		      ldx	#$3F	;okay, this display kernal sucks, but I'm not doing
+    250  f17e		       85 02	   blow1      sta	WSYNC	;much here so I didn't go for anything fancy since
+    251  f180		       ca		      dex		;this is just a demo. This wouldn't be the way you
+    252  f181		       10 fb		      bpl	blow1	;do things in a game, but it works for this.
+    253  f183		       85 02		      sta	WSYNC
+    254  f185		       ea		      nop		;See... you'd never do something weenie like this
+    255  f186		       ea		      nop		;in a real programme
+    256  f187		       ea		      nop		;
+    257  f188		       ea		      nop		;
+    258  f189		       ea		      nop		;but when I was experimenting with this programme
+    259  f18a		       ea		      nop		;I just had a whole bunch of ";nop" lines here
+    260  f18b		       ea		      nop		;and I removed the ";" until I got the spacing more
+    261  f18c		       ea		      nop		;or less where I wanted it
+    262  f18d		       ea		      nop
+    263  f18e		       ea		      nop
+    264  f18f		       ea		      nop
+    265  f190		       ea		      nop
+    266  f191		       ea		      nop
+    267  f192		       ea		      nop
+    268  f193		       ea		      nop
+    269  f194		       85 10		      sta	RESP0
+    270  f196		       ea		      nop
+    271  f197		       ea		      nop
+    272  f198		       ea		      nop
+    273  f199		       ea		      nop
+    274  f19a		       ea		      nop
+    275  f19b		       ea		      nop
+    276  f19c		       ea		      nop
+    277  f19d		       85 11		      sta	RESP1
+    278  f19f
+    279  f19f		       a0 06		      ldy	#$06
+    280  f1a1		       b9 8f 00    sload      lda	SPRITEB,y
+    281  f1a4		       85 1b		      sta	GP0
+    282  f1a6		       b9 87 00 	      lda	SPRITEA,y
+    283  f1a9		       85 1c		      sta	GP1
+    284  f1ab		       85 02		      sta	WSYNC	;you wouldn't do something weenie like this
+    285  f1ad		       85 02		      sta	WSYNC	;either in a real programme, but it was an
+    286  f1af		       85 02		      sta	WSYNC	;easy way to make each sprite 8 lines high
+    287  f1b1		       85 02		      sta	WSYNC	;and I was more concerned with making a working
+    288  f1b3		       85 02		      sta	WSYNC	;and accurate clock than a nice display.
+    289  f1b5		       85 02		      sta	WSYNC
+    290  f1b7		       85 02		      sta	WSYNC
+    291  f1b9		       85 02		      sta	WSYNC
+    292  f1bb		       88		      dey
+    293  f1bc		       10 e3		      bpl	sload
+    294  f1be		       a9 00		      lda	#$00
+    295  f1c0		       85 1b		      sta	GP0
+    296  f1c2		       85 1c		      sta	GP1
+    297  f1c4
+    298  f1c4		       a2 48		      ldx	#$48
+    299  f1c6		       85 02	   blow2      sta	WSYNC	;now we just blow the rest of the unused scanlines.
+    300  f1c8		       ca		      dex
+    301  f1c9		       10 fb		      bpl	blow2
+    302  f1cb		       60		      rts
+    303  f1cc
+    304  f1cc
+    305  f1cc		       a9 24	   clear      LDA	#$24	;set timer for overscan
+    306  f1ce		       8d 96 02 	      STA	TIM64T
+    307  f1d1		       a9 02		      LDA	#$02	;clear the screen and turn off the video
+    308  f1d3		       85 02		      STA	WSYNC
+    309  f1d5		       85 01		      STA	VBLANK
+    310  f1d7		       a9 00		      LDA	#$00
+    311  f1d9		       85 0d		      STA	PF0
+    312  f1db		       85 0e		      STA	PF1
+    313  f1dd		       85 0f		      STA	PF2
+    314  f1df		       85 08		      sta	COLUPF
+    315  f1e1		       85 09		      sta	COLUBK
+    316  f1e3
+    317  f1e3		       a9 3c		      LDA	#$3C	;this is the clock routine itself. it counts
+    318  f1e5		       c6 99		      DEC	FRAMES	;down from 60 frames, and then decreases the
+    319  f1e7		       d0 1c		      bne	joy	;seconds, which count down the minutes and then
+    320  f1e9		       a9 3c		      lda	#$3C	;the hours.. etc. For whatever reason my 2600
+    321  f1eb		       85 99		      STA	FRAMES	;wasn't running at exactly 60 frames a second
+    322  f1ed		       c6 82		      DEC	SECS	;so there were two lines inserted to correct
+    323  f1ef		       d0 14		      bne	joy	;timing accuracy problems
+    324  f1f1		       85 82		      STA	SECS
+    325  f1f3		       c6 82		      DEC	SECS	;here's one. Kept me from losing a second every
+    326  f1f5		       c6 83		      DEC	MINS	;minute
+    327  f1f7		       d0 0c		      bne	joy
+    328  f1f9		       85 83		      STA	MINS
+    329  f1fb		       a9 18		      LDA	#$18
+    330  f1fd		       e6 82		      INC	SECS	;here's the other. It kept me from gaining a
+    331  f1ff		       c6 84		      DEC	HOURS	;second every hour.
+    332  f201		       d0 02		      bne	joy
+    333  f203		       85 84		      STA	HOURS
+    334  f205							;now my timing inaccuracies may have been caused
+    335  f205							;by either my V-blank, V-sync, Overscan, or
+    336  f205							;display being a few scanlines too long or short.
+    337  f205							;theoretically if all my lines were bang on,
+    338  f205							;I wouldn't have needed those two seconds counter
+    339  f205							;corrections. But with them inplace, it allows me
+    340  f205							;to be a little looser with my code which works for
+    341  f205							;me. It may still gain or lose a second every 60
+    342  f205							;hours, but I can live with that. And since I'll
+    343  f205							;be employing this clock in a virtual pet game and
+    344  f205							;not a swiss made olympic time piece, a little
+    345  f205							;inaccuracy won't matter.
+    346  f205
+    347  f205		       ad 80 02    joy	      lda	SWCHA	;load joysticks
+    348  f208		       09 0f		      ora	#$0f	;strip the data for player #2 joystick
+    349  f20a		       c9 ef		      cmp	#$ef	;up
+    350  f20c		       f0 17		      beq	up
+    351  f20e		       c9 df		      cmp	#$df	;down
+    352  f210		       f0 32		      beq	down
+    353  f212		       c9 bf		      cmp	#$bf	;left
+    354  f214		       f0 4d		      beq	left
+    355  f216		       c9 7f		      cmp	#$7f	;right
+    356  f218		       f0 68		      beq	right
+    357  f21a		       a9 00		      lda	#$00	;no movement
+    358  f21c		       85 85		      sta	JOYDEL	;reset the joystick delay variable
+    359  f21e		       a9 01		      lda	#$01	;reset the first move variable
+    360  f220		       85 86		      sta	JOY1ST
+    361  f222		       4c 9e f2 	      jmp	oscan	;finish off the overscan
+    362  f225
+    363  f225		       a5 84	   up	      lda	HOURS	;check to see if we've run out our hours
+    364  f227		       c9 01		      cmp	#$01
+    365  f229		       f0 73		      beq	oscan	;yep, then ignore the movement
+    366  f22b		       e6 85		      inc	JOYDEL	;increase the joystick delay variable
+    367  f22d		       a5 86		      lda	JOY1ST	;check to see if this is the first move in this
+    368  f22f		       c9 01		      cmp	#$01	;direction.
+    369  f231		       f0 06		      beq	now1	;if it is then change the variable now
+    370  f233		       a9 1e		      lda	#$1E	;nope then see if there's been enough of a delay
+    371  f235		       c5 85		      cmp	JOYDEL	;to change the variable yet.
+    372  f237		       d0 65		      bne	oscan
+    373  f239		       a9 00	   now1       lda	#$00	;reset the joystick delay and set the first move
+    374  f23b		       85 86		      sta	JOY1ST	;indicator to "no"
+    375  f23d		       85 85		      sta	JOYDEL
+    376  f23f		       c6 84		      dec	HOURS	;decrease the hours counter
+    377  f241		       4c 9e f2 	      jmp	oscan
+    378  f244
+    379  f244		       a5 84	   down       lda	HOURS
+    380  f246		       c9 18		      cmp	#$18
+    381  f248		       f0 54		      beq	oscan
+    382  f24a		       e6 85		      inc	JOYDEL
+    383  f24c		       a5 86		      lda	JOY1ST
+    384  f24e		       c9 01		      cmp	#$01
+    385  f250		       f0 06		      beq	now2
+    386  f252		       a5 85		      lda	JOYDEL
+    387  f254		       c9 1e		      cmp	#$1E
+    388  f256		       d0 46		      bne	oscan
+    389  f258		       a9 00	   now2       lda	#$00
+    390  f25a		       85 86		      sta	JOY1ST
+    391  f25c		       85 85		      sta	JOYDEL
+    392  f25e		       e6 84		      inc	HOURS	;increase the hours counter
+    393  f260		       4c 9e f2 	      jmp	oscan
+    394  f263
+    395  f263		       a5 83	   left       lda	MINS
+    396  f265		       c9 01		      cmp	#$01
+    397  f267		       f0 35		      beq	oscan
+    398  f269		       e6 85		      inc	JOYDEL
+    399  f26b		       a5 86		      lda	JOY1ST
+    400  f26d		       c9 01		      cmp	#$01
+    401  f26f		       f0 06		      beq	now3
+    402  f271		       a9 1e		      lda	#$1E
+    403  f273		       c5 85		      cmp	JOYDEL
+    404  f275		       d0 27		      bne	oscan
+    405  f277		       a9 00	   now3       lda	#$00
+    406  f279		       85 86		      sta	JOY1ST
+    407  f27b		       85 85		      sta	JOYDEL
+    408  f27d		       c6 83		      dec	MINS	;decrease the minutes counter
+    409  f27f		       4c 9e f2 	      jmp	oscan
+    410  f282
+    411  f282		       a5 83	   right      lda	MINS
+    412  f284		       c9 3c		      cmp	#$3c
+    413  f286		       f0 16		      beq	oscan
+    414  f288		       e6 85		      inc	JOYDEL
+    415  f28a		       a5 86		      lda	JOY1ST
+    416  f28c		       c9 01		      cmp	#$01
+    417  f28e		       f0 06		      beq	now4
+    418  f290		       a9 1e		      lda	#$1E
+    419  f292		       c5 85		      cmp	JOYDEL
+    420  f294		       d0 08		      bne	oscan
+    421  f296		       a9 00	   now4       lda	#$00
+    422  f298		       85 86		      sta	JOY1ST
+    423  f29a		       85 85		      sta	JOYDEL
+    424  f29c		       e6 83		      inc	MINS	;increase the minutes counter
+    425  f29e
+    426  f29e		       ad 84 02    oscan      lda	INTIM	;see if the timer has run out
+    427  f2a1		       d0 fb		      BNE	oscan
+    428  f2a3		       85 02		      STA	WSYNC
+    429  f2a5		       60		      RTS
+    430  f2a6
+    431  f2a6		       e7	   zeros      .byte.b	%11100111	;sprites are stored upsidedown, and there
+    432  f2a7		       a5		      .byte.b	%10100101	;are two copies of each number in each sprite
+    433  f2a8		       a5		      .byte.b	%10100101	;location. The unwanted number is stripped
+    434  f2a9		       a5		      .byte.b	%10100101	;with the AND command (AND #$0F for the right
+    435  f2aa		       a5		      .byte.b	%10100101	;number stripped, AND #F0 for the left)
+    436  f2ab		       a5		      .byte.b	%10100101	;then any two numbers can be combined with an
+    437  f2ac		       e7		      .byte.b	%11100111	;OR command. Neat huh?
+    438  f2ad
+    439  f2ad		       e7	   ones       .byte.b	%11100111
+    440  f2ae		       42		      .byte.b	%01000010
+    441  f2af		       42		      .byte.b	%01000010
+    442  f2b0		       42		      .byte.b	%01000010
+    443  f2b1		       42		      .byte.b	%01000010
+    444  f2b2		       c6		      .byte.b	%11000110
+    445  f2b3		       42		      .byte.b	%01000010
+    446  f2b4
+    447  f2b4		       e7	   twos       .byte.b	%11100111
+    448  f2b5		       84		      .byte.b	%10000100
+    449  f2b6		       84		      .byte.b	%10000100
+    450  f2b7		       e7		      .byte.b	%11100111
+    451  f2b8		       21		      .byte.b	%00100001
+    452  f2b9		       21		      .byte.b	%00100001
+    453  f2ba		       e7		      .byte.b	%11100111
+    454  f2bb
+    455  f2bb		       e7	   threes     .byte.b	%11100111
+    456  f2bc		       21		      .byte.b	%00100001
+    457  f2bd		       21		      .byte.b	%00100001
+    458  f2be		       e7		      .byte.b	%11100111
+    459  f2bf		       21		      .byte.b	%00100001
+    460  f2c0		       21		      .byte.b	%00100001
+    461  f2c1		       e7		      .byte.b	%11100111
+    462  f2c2
+    463  f2c2		       21	   fours      .byte.b	%00100001
+    464  f2c3		       21		      .byte.b	%00100001
+    465  f2c4		       21		      .byte.b	%00100001
+    466  f2c5		       e7		      .byte.b	%11100111
+    467  f2c6		       a5		      .byte.b	%10100101
+    468  f2c7		       a5		      .byte.b	%10100101
+    469  f2c8		       84		      .byte.b	%10000100
+    470  f2c9
+    471  f2c9		       e7	   fives      .byte.b	%11100111
+    472  f2ca		       21		      .byte.b	%00100001
+    473  f2cb		       21		      .byte.b	%00100001
+    474  f2cc		       e7		      .byte.b	%11100111
+    475  f2cd		       84		      .byte.b	%10000100
+    476  f2ce		       84		      .byte.b	%10000100
+    477  f2cf		       e7		      .byte.b	%11100111
+    478  f2d0
+    479  f2d0		       e7	   sixes      .byte.b	%11100111
+    480  f2d1		       a5		      .byte.b	%10100101
+    481  f2d2		       a5		      .byte.b	%10100101
+    482  f2d3		       e7		      .byte.b	%11100111
+    483  f2d4		       84		      .byte.b	%10000100
+    484  f2d5		       84		      .byte.b	%10000100
+    485  f2d6		       c6		      .byte.b	%11000110
+    486  f2d7
+    487  f2d7		       84	   sevens     .byte.b	%10000100
+    488  f2d8		       84		      .byte.b	%10000100
+    489  f2d9		       84		      .byte.b	%10000100
+    490  f2da		       42		      .byte.b	%01000010
+    491  f2db		       21		      .byte.b	%00100001
+    492  f2dc		       21		      .byte.b	%00100001
+    493  f2dd		       e7		      .byte.b	%11100111
+    494  f2de
+    495  f2de		       e7	   eights     .byte.b	%11100111	;This code is (c)1997 by Chris "Crackers" Cracknell
+    496  f2df		       a5		      .byte.b	%10100101	;and is placed in the Public Domain by the author.
+    497  f2e0		       a5		      .byte.b	%10100101	;Anyone is free to employ and distribute this code
+    498  f2e1		       e7		      .byte.b	%11100111	;as they see fit.
+    499  f2e2		       a5		      .byte.b	%10100101	;
+    500  f2e3		       a5		      .byte.b	%10100101	;
+    501  f2e4		       e7		      .byte.b	%11100111	;
+    502  f2e5							;
+    503  f2e5		       21	   nines      .byte.b	%00100001	;Well... if you're going to use this code in a
+    504  f2e6		       21		      .byte.b	%00100001	;"Doomsday Machine" to destroy the world, then
+    505  f2e7		       21		      .byte.b	%00100001	;I would rather you didn't. But otherwise, knock
+    506  f2e8		       e7		      .byte.b	%11100111	;yourself out with it.
+    507  f2e9		       a5		      .byte.b	%10100101	;
+    508  f2ea		       a5		      .byte.b	%10100101	;Actually... if the "Doomsday Machine" is just in
+    509  f2eb		       e7		      .byte.b	%11100111	;a game, then it's okay to use the code.
+    510  f2ec							;
+    511  fffc					      org	$FFFC	;Unless it's like the movie "War Games" where the
+    512  fffc		       00 f0		      .word.w	start	;computer running the game is hooked up to a real
+    513  fffe		       00 f0		      .word.w	start	;"Doomsday Machine" then it wouldn't be a good idea.
