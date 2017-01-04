@@ -68,7 +68,7 @@ The following changes were manually applied to the exported `dasmj.js` file:
 ## Usage
 
 ```JavaScript
-import * as dasm from "dasm";
+import dasm from "dasm";
 
 // Read utf-8 assembly source
 const src = "...";
