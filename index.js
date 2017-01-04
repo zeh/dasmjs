@@ -1,14 +1,14 @@
 const dasm = require("./lib/dasm.js");
 
 function print(s) {
-	console.log("[DASM] ", s);
+	// console.log("[DASM] ", s);
 }
 function printErr(s) {
-	console.error("[DASM] ", s);
+	// console.error("[DASM] ", s);
 }
 
 function preRun() {
-//	console.log("[TEST] [PRE RUN]");
+	// console.log("[TEST] [PRE RUN]");
 }
 
 var options = {
