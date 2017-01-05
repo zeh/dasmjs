@@ -34,6 +34,13 @@ f005 a9 00
 ...
 ```
 
+Among other features, dasm sports:
+
+* fast assembly
+* several binary output formats available
+* expressions using [] for parenthesis
+* complex pseudo ops, repeat loops, macros, etc
+
 ## Technical information
 
 This package uses version 2.20.11 of dasm. It supports the following processor architectures:
@@ -43,13 +50,6 @@ This package uses version 2.20.11 of dasm. It supports the following processor a
 * 6803
 * HD6303 (extension of 6803)
 * 68HC11
-
-Among other features, dasm supports:
-
-* fast assembly
-* several binary output formats available
-* expressions using [] for parenthesis
-* complex pseudo ops, repeat loops, macros, etc
 
 This specific port was built on Linux (err, Windows 10 bash) from the dasm source using the following commands:
 
@@ -92,6 +92,7 @@ Check the [emscripten FileSystem](https://kripken.github.io/emscripten-site/docs
 * Expose the module initialization options
 * TypeScript definitions
 * Real tests with CI
+* Less hacky function syntax (return data, no need for FS, etc)
 * Include machine target files (vcs.h, atari.h, channel f, etc)
 * Command-line package (`dasm-cli`)
 
