@@ -25,7 +25,7 @@ const log:string[] = [];
 
 export interface IOptions {
 	quick?: boolean;
-	format?: "1"|"2"|"3";
+	format?: "1"|"2"|"3"|1|2|3;
 }
 
 export interface ISymbol {
@@ -38,7 +38,8 @@ export interface ISymbol {
 }
 
 
-// Methods
+// Methods and functions
+
 function logLine(s:string) {
 	log.push(s);
 }
@@ -88,8 +89,6 @@ export default function(src:string, options:IOptions = {}) {
 	args.push("-o" + FILENAME_OUT);
 	if (options.format) {
 		args.push("-f" + options.format);
-	} else {
-		args.push("-f3");
 	}
 	if (!options.quick) {
 		args.push("-L" + FILENAME_LIST);
