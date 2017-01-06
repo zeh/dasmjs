@@ -70,7 +70,7 @@ The following changes were manually applied to the exported `dasmj.js` file:
 Install:
 
 ```shell
-npm install dev --save
+npm install dasm --save
 ```
 
 Import as a module:
@@ -98,8 +98,6 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 ## More information
 
 Please [download dasm](https://sourceforge.net/projects/dasm-dillon/) and check its full documentation for more information and command line switches (or just check [any cloned copy on GitHub](https://github.com/search?utf8=%E2%9C%93&q=%22DOCUMENTATION+FOR+DASM%2C+a+high+level+macro+cross+assembler+for%3A%22+extension%3Atxt&type=Code&ref=searchresults)).
-
-
 
 ## Todo
 
