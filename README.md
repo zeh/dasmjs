@@ -93,19 +93,60 @@ const result = dasm(src);
 const ROM = result.data;
 ```
 
+### Advanced usage
+
+Advanced options can be passed to the `dasm` call via an options parameter. For example:
+
+```JavaScript
+// Create a rom using the typical Atari VCS 4096-byte format
+dasm(src, { format: 3 })
+
+// Just create a rom without exporting symbols or lists
+dasm(src, { quick: true })
+
+// Pass original command-line parameters
+dasm(src, { parameters: "-f3 -p2 -v4 -DVER=5" })
+```
+
+These are all the options currently parsed:
+
+* `format`: binary output format. Dictates the size and arrangement of the generated ROM.
+  * `1` (default): output includes a 2-byte origin header.
+  * `2`: random access segment format. Output is made of chuncks that include a 4-byte origin and length header.
+  * `3`: raw format. Just the data, no headers.
+* `quick`: boolean. If set to `true`, don't export any symbol and pass list as part of its returned data. Defaults to false.
+* (TODO) `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
+* (TODO) `include`: key-value object. This is a list of files that should be made available for the source code to `includes`. The key contains the filename, and the value, its content.
+* (TODO) `machine`: target machine. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
+  * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
+  * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
+
+Check [any cloned copy of the dasm documentation on GitHub](https://github.com/search?utf8=%E2%9C%93&q=%22DOCUMENTATION+FOR+DASM%2C+a+high+level+macro+cross+assembler+for%3A%22+extension%3Atxt&type=Code&ref=searchresults) for a list of all command-line switches available, and more information on binary formats.
+
+### Returned object
+
+The object returned by the `dasm` function has more than just a binary ROM. This is what's available:
+
+* `data`: `Uint8Array`. The exported ROM, as a list of integers.
+* `output`: `string[]`. All data written by dasm to `stdout`.
+* (TODO) `list`: `IList[]`. A list of all parsing passes performed in the source code, and their generated list of lines.
+* `listRaw`: `string`. The raw output of the list file (equivalent to the `-L` switch).
+* `symbols`: `ISymbol[]`. A parsed list of all symbols (labels and constants) defined by the source code.
+* `symbolsRaw`: `string`. The raw output of the symbols file (equivalent to the `-s` switch).
+
+### More information
+
 TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
-
-## More information
-
-Please [download dasm](https://sourceforge.net/projects/dasm-dillon/) and check its full documentation for more information and command line switches (or just check [any cloned copy on GitHub](https://github.com/search?utf8=%E2%9C%93&q=%22DOCUMENTATION+FOR+DASM%2C+a+high+level+macro+cross+assembler+for%3A%22+extension%3Atxt&type=Code&ref=searchresults)).
 
 ## Todo
 
-* More examples, including on how to include files
 * Include machine target files (vcs.h, atari.h, channel f, etc) via a `machine` option
-* Allow included files via a `include` option
-* Allow command line parameters via a `params` option
+* Allow included files via a `includes` option
+* Allow command line parameters via a `parameters` option
 * Parse list output in a more concise way
+* More examples, including on how to include files
+* More tests
+* Fix the incomplete list file exporting
 * Command-line package? (`dasm-cli`)
 
 Contributions are welcome.
