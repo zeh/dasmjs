@@ -8,8 +8,7 @@
     "test": "mocha test/.setup.js test/**/*-test-*.js",
     "test:watch": "mocha -w test/.setup.js test/**/*-test-*.js",
     "build": "tsc --pretty",
-    "watch": "tsc --pretty --watch",
-    "prepublish": "npm run build"
+    "watch": "tsc --pretty --watch"
   },
   "repository": {
     "type": "git",
