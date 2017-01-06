@@ -116,7 +116,7 @@ These are all the options currently parsed:
   * `3`: raw format. Just the data, no headers.
 * `quick`: boolean. If set to `true`, don't export any symbol and pass list as part of its returned data. Defaults to false.
 * (TODO) `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
-* (TODO) `include`: key-value object. This is a list of files that should be made available for the source code to `includes`. The key contains the filename, and the value, its content.
+* (TODO) `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the filename, and the value, its content.
 * (TODO) `machine`: target machine. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
@@ -136,17 +136,17 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 
 ### More information
 
-TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
+TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. Non-TypeScript JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
 
 ## Todo
 
-* Include machine target files (vcs.h, atari.h, channel f, etc) via a `machine` option
-* Allow included files via a `includes` option
-* Allow command line parameters via a `parameters` option
+* `machines` option: recompile dasm with ./machine files; parse option
+* `includes` option: parse option; write files to FS
+* `parameters` option: parse option
 * Parse list output in a more concise way
 * More examples, including on how to include files
-* More tests
 * Fix the incomplete list file exporting
+* More tests: all options
 * Command-line package? (`dasm-cli`)
 
 Contributions are welcome.
