@@ -12,6 +12,30 @@ function logErrorLine(s) {
 	log.push("[ERROR] " + s);
 }
 
+function parseSymbols(symbolsFile) {
+	var symbols = [];
+	if (symbolsFile) {
+		var lines = symbolsFile.split("\n");
+		for (var i = 0; i < lines.length; i++) {
+			var line = lines[i];
+			if (line.length === 47 && line.substr(0, 3) !== "---") {
+				var value = line.substr(25, 4).trim();
+				var isLabel = value.substr(0, 1) === "f";
+				var flags = line.substr(44, 2).trim();
+				symbols.push({
+					name: line.substr(0, 25).trim(),
+					isLabel: isLabel,
+					isConstant: !isLabel,
+					value: parseInt(isLabel ? value.substr(1) : value),
+					wasReferenced: Boolean(flags.match(/r/i)),
+					wasPseudoOpCreated: Boolean(flags.match(/s/i)),
+				});
+			}
+		}
+	}
+	return symbols;
+}
+
 var options = {
 	noInitialRun: true,
 	print: logLine,
@@ -54,6 +78,6 @@ module.exports = function(src, options) {
 		data: Module.FS.readFile(FILENAME_OUT),
 		output: log.concat(),
 		list: isQuick ? undefined : Module.FS.readFile(FILENAME_LIST, { encoding: "utf8" }),
-		symbols: isQuick ? undefined : Module.FS.readFile(FILENAME_SYMBOLS, { encoding: "utf8" }),
+		symbols: isQuick ? undefined : parseSymbols(Module.FS.readFile(FILENAME_SYMBOLS, { encoding: "utf8" })),
 	};
 }
