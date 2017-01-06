@@ -67,34 +67,48 @@ The following changes were manually applied to the exported `dasmj.js` file:
 
 ## Usage
 
-```JavaScript
-import dasm from "dasm";
+Install:
 
+```shell
+npm install dev --save
+```
+
+Import as a module:
+
+```JavaScript
+import * as dasm from "dasm"; // ES6
+var dasm = require("dasm").default; // ES5
+```
+
+Finally, convert code to a binary data ROM. Instead of forcing developers to use a command line-like interface, the function that wraps the emscripten module provides a modern interface to dasm:
+
+```JavaScript
 // Read utf-8 assembly source
 const src = "...";
 
-// Run with any number of parameters
-const result = dasm(src, "-f1", "-ofile.out", "-lfile.lst", ...);
+// Run with the source
+const result = dasm(src);
 
-// Read the output as a binary (int array)
-const ROM = result.FS.readFile("file.out");
+// Read the output as a binary (Uint8Array array)
+const ROM = result.data;
 ```
+
+TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
 
 ## More information
 
-Please [download dasm](https://sourceforge.net/projects/dasm-dillon/) and check its full documentation for more information and command line switches.
+Please [download dasm](https://sourceforge.net/projects/dasm-dillon/) and check its full documentation for more information and command line switches (or just check [any cloned copy on GitHub](https://github.com/search?utf8=%E2%9C%93&q=%22DOCUMENTATION+FOR+DASM%2C+a+high+level+macro+cross+assembler+for%3A%22+extension%3Atxt&type=Code&ref=searchresults)).
 
-Check the [emscripten FileSystem](https://kripken.github.io/emscripten-site/docs/api_reference/Filesystem-API.html) to learn about `FS` and how to use it.
+
 
 ## Todo
 
 * More examples, including on how to include files
-* Expose the module initialization options
-* TypeScript definitions
-* Real tests with CI
-* Less hacky function syntax (return data, no need for FS, etc)
-* Include machine target files (vcs.h, atari.h, channel f, etc)
-* Command-line package (`dasm-cli`)
+* Include machine target files (vcs.h, atari.h, channel f, etc) via a `machine` option
+* Allow included files via a `include` option
+* Allow command line parameters via a `params` option
+* Parse list output in a more concise way
+* Command-line package? (`dasm-cli`)
 
 Contributions are welcome.
 
