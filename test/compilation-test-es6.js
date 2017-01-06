@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import dasm from "./../index";
+import dasm from "./../lib/index";
 import * as fs from "fs";
 import * as path from "path";
 

@@ -1,5 +1,10 @@
+.tscache
 .vscode
 .gitattributes
 node_modules
 npm-debug.log
 /test
+index.ts
+
+tsconfig.json
+tslint.json

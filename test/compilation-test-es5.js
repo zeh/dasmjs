@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var dasm = require("./../index");
+var dasm = require("./../lib/index").default;
 var fs = require("fs");
 var path = require("path");
 
