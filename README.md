@@ -154,6 +154,11 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 
 Contributions are welcome.
 
+## Changelog
+
+Check [the release list](https://github.com/zeh/dasmjs/releases) for a list of what has changed in every new version.
+
+
 ## License
 
 This follows dasm itself and uses the [GNU Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
