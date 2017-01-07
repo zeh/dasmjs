@@ -1,5 +1,8 @@
 # The dasm macro assembler (for JavaScript)
 
+[![npm](https://img.shields.io/npm/v/dasm.svg)](https://www.npmjs.com/package/dasm)
+[![Dependency Status](https://david-dm.org/zeh/dasmjs.svg)](https://david-dm.org/zeh/dasmjs)
+
 This is an [emscripten](https://github.com/kripken/emscripten)-compiled version of the [dasm macro assembler](http://dasm-dillon.sourceforge.net/).
 
 The dasm macro assembler transforms assembly code into 6502-compatible executable binary code. Since this is a JavaScript port of dasm, it allows that compilation process from JavaScript programs; more especifically, it can be used to create Atari VCS 2600 and Fairchild Channel F ROMs from a string containing dasm-compatible assembly source code.
