@@ -14,6 +14,7 @@ const moduleOptions = {
 	noInitialRun: true,
 	print: logLine,
 	printErr: logErrorLine,
+	noExitRuntime: true,
 	// Also available: preInit, preRun
 };
 
