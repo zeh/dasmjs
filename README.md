@@ -54,19 +54,7 @@ This package uses version 2.20.11 of dasm. It supports the following processor a
 * HD6303 (extension of 6803)
 * 68HC11
 
-This specific port was built on Linux (err, Windows 10 bash) from the dasm source using the following commands:
-
-```shell
-emmake make
-mv src/dasm src/dasm.bc
-emcc src/dasm.bc -o dasm.js
-```
-
-The following changes were manually applied to the exported `dasmj.js` file:
-
-1. Wrapped the code with a function, so that could export it as a module
-2. Returned the created module as the result of a function call
-3. Exposed its internal file system through a `FS` variable
+This specific port was built on Linux (err, Windows 10 bash) from the dasm source using emscripten 1.37.0. Check the [dasm folder](https://github.com/zeh/dasmjs/tree/master/dasm) for the script that was used to compile `dasm.js`, including its pre/post-JS includes to wrap the code in a module function and return its results in a more usable way.
 
 ## Usage
 
@@ -143,12 +131,16 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 
 ## Todo
 
-* `machines` option: recompile dasm with ./machine files; parse option
-* `includes` option: parse option; write files to FS
-* `parameters` option: parse option
-* Parse list output in a more concise way
+* `machines` option
+  * recompile dasm with ./machine files as [--embed-file](https://kripken.github.io/emscripten-site/docs/tools_reference/emcc.html#emcc-embed-file) files
+  * parse option
+* `includes` option
+  * parse option
+  * write files to FS
+* `parameters` option
+  * parse option
+* Parse `-L` list output in a more concise way
 * More examples, including on how to include files
-* Fix the incomplete list file exporting
 * More tests: all options
 * Command-line package? (`dasm-cli`)
 
