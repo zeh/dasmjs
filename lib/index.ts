@@ -92,7 +92,7 @@ export default function(src:string, options:IOptions = {}) {
 		args.push("-f" + options.format);
 	}
 	if (!options.quick) {
-		args.push("-L" + FILENAME_LIST);
+		args.push("-l" + FILENAME_LIST);
 		args.push("-s" + FILENAME_SYMBOLS);
 	}
 
