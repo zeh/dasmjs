@@ -47,6 +47,7 @@ extern MNEMONIC    MneF8[];
 void generate(void);
 void genfill(long fill, long bytes, int size);
 void pushif(bool xbool);
+void addmsg(char *message);
 int gethexdig(int c);
 
 /*
