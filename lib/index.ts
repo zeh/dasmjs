@@ -27,6 +27,7 @@ const log:string[] = [];
 export interface IOptions {
 	quick?: boolean;
 	format?: "1"|"2"|"3"|1|2|3;
+	parameters?: string;
 }
 
 export interface ISymbol {
@@ -182,6 +183,9 @@ export default function(src:string, options:IOptions = {}) {
 	if (!options.quick) {
 		args.push("-l" + FILENAME_LIST);
 		args.push("-s" + FILENAME_SYMBOLS);
+	}
+	if (options.parameters) {
+		args = args.concat(options.parameters.split(" "));
 	}
 
 	// Finally, call it

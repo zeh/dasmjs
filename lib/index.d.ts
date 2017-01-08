@@ -1,6 +1,7 @@
 export interface IOptions {
     quick?: boolean;
     format?: "1" | "2" | "3" | 1 | 2 | 3;
+    parameters?: string;
 }
 export interface ISymbol {
     name: string;
