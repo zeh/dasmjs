@@ -15,10 +15,11 @@ export interface ISymbol {
     wasPseudoOpCreated: boolean;
 }
 export interface ILine {
-    index: number;
+    number: number;
     address: number;
     bytes: Uint8Array | undefined;
     raw: string;
+    errorMessage: string | undefined;
     comment: string | undefined;
     command: string | undefined;
 }
@@ -29,4 +30,6 @@ export default function (src: string, options?: IOptions): {
     listRaw: string | undefined;
     symbols: ISymbol[] | undefined;
     symbolsRaw: string | undefined;
+    exitStatus: number;
+    success: boolean;
 };

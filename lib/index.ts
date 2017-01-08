@@ -20,6 +20,7 @@ const moduleOptions = {
 
 const Module:any = (dasm as any).DASM(moduleOptions);
 const log:string[] = [];
+const didCompile:boolean = false;
 
 
 // Interfaces
@@ -41,10 +42,11 @@ export interface ISymbol {
 }
 
 export interface ILine {
-	index: number;
+	number: number;
 	address: number;
 	bytes: Uint8Array|undefined;
 	raw: string;
+	errorMessage: string|undefined;
 	comment: string|undefined;
 	command: string|undefined;
 }
@@ -57,7 +59,7 @@ function logLine(s:string) {
 }
 
 function logErrorLine(s:string) {
-	log.push("[ERROR] " + s);
+	logLine("[ERROR] " + s);
 }
 
 function parseList(listFile:string):ILine[] {
@@ -69,42 +71,57 @@ function parseList(listFile:string):ILine[] {
 	const commentFind = /;(.*)$/;
 	const byteCodeFind = /^.*\t\t *([0-9a-fA-F ]+)\t/;
 	const commandFind = /.*?\t\t.*?\t([^;]*)/;
+	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
 	rawLines.forEach((rawLine) => {
 		if (rawLine && !rawLine.match(metaFind)) {
-			// Address
+			// Default values
+			let lineNumber = lines.length + 1;
+			let errorMessage = undefined;
 			let address = -1;
-			if (!rawLine.match(unknownFind)) {
-				// Known location
-				address = parseNumber(((rawLine.match(addressFind) as any)[1] as string));
-			}
-
-			// Comment
-			let comment:string|undefined = undefined;
-			const commentMatches:any = rawLine.match(commentFind);
-			if (commentMatches) {
-				comment = commentMatches[1] as string;
-			}
-
-			// Bytes
+			let comment = undefined;
 			let bytes = undefined;
-			let byteMatches:any = rawLine.match(byteCodeFind);
-			if (byteMatches) {
-				bytes = parseBytes((byteMatches[1] as string));
-			}
-
-			// Commands
 			let command = undefined;
-			let commandMatches:any = rawLine.match(commandFind);
-			if (commandMatches) {
-				command = commandMatches[1] as string;
-				if (!command.trim()) command = undefined;
+
+			// First, catch errors
+			const errorMatches:any = rawLine.match(errorFind);
+			if (errorMatches) {
+				errorMessage = errorMatches[2] as string;
+				lineNumber = parseInt(errorMatches[1] as string, 10);
+				didCompile = false;
+			} else {
+				// If not, parse properly
+				// Address
+				if (!rawLine.match(unknownFind)) {
+					// Known location
+					address = parseNumber(((rawLine.match(addressFind) as any)[1] as string));
+				}
+
+				// Comment
+				const commentMatches:any = rawLine.match(commentFind);
+				if (commentMatches) {
+					comment = commentMatches[1] as string;
+				}
+
+				// Bytes
+				let byteMatches:any = rawLine.match(byteCodeFind);
+				if (byteMatches) {
+					bytes = parseBytes((byteMatches[1] as string));
+				}
+
+				// Commands
+				let commandMatches:any = rawLine.match(commandFind);
+				if (commandMatches) {
+					command = commandMatches[1] as string;
+					if (!command.trim()) command = undefined;
+				}
 			}
 
 			lines.push({
-				index: lines.length,
+				number: lineNumber,
 				address,
 				bytes,
 				raw: rawLine,
+				errorMessage,
 				comment,
 				command,
 			});
@@ -171,6 +188,7 @@ function parseSymbols(symbolsFile:string):ISymbol[] {
 export default function(src:string, options:IOptions = {}) {
 	// Prepare vars
 	log.length = 0;
+	didCompile = true;
 
 	// Prepare source
 	Module.FS.writeFile(FILENAME_IN, src);
@@ -211,5 +229,7 @@ export default function(src:string, options:IOptions = {}) {
 		listRaw: listFile,
 		symbols: symbolsFile ? parseSymbols(symbolsFile) : undefined,
 		symbolsRaw: symbolsFile,
+		exitStatus: Module.getStatus() as number,
+		success: didCompile,
 	};
 }
