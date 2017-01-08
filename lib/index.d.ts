@@ -2,6 +2,9 @@ export interface IOptions {
     quick?: boolean;
     format?: "1" | "2" | "3" | 1 | 2 | 3;
     parameters?: string;
+    includes?: {
+        [key: string]: string;
+    };
 }
 export interface ISymbol {
     name: string;

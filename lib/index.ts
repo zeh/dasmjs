@@ -28,6 +28,7 @@ export interface IOptions {
 	quick?: boolean;
 	format?: "1"|"2"|"3"|1|2|3;
 	parameters?: string;
+	includes?: { [key:string]:string; };
 }
 
 export interface ISymbol {
@@ -186,6 +187,13 @@ export default function(src:string, options:IOptions = {}) {
 	}
 	if (options.parameters) {
 		args = args.concat(options.parameters.split(" "));
+	}
+
+	// Include files as needed
+	if (options.includes) {
+		for (let fileName in options.includes) {
+			Module.FS.writeFile(fileName, options.includes[fileName]);
+		}
 	}
 
 	// Finally, call it
