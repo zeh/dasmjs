@@ -47,6 +47,7 @@ emcc src/dasm.bc \
 	--pre-js ../prejs.txt \
 	--post-js ../postjs.txt \
 	--embed-file machines \
+	--exclude-file machines/channel-f/README \
 	-o dasm.js
 mv dasm.js ..
 
