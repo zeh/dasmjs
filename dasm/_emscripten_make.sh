@@ -39,7 +39,15 @@ echo ==========
 echo
 
 mv src/dasm src/dasm.bc
-emcc -O3 --memory-init-file 0 -g1 src/dasm.bc -s FORCE_FILESYSTEM=1 --pre-js ../prejs.txt --post-js ../postjs.txt -o dasm.js
+emcc src/dasm.bc \
+	-O3 \
+	--memory-init-file 0 \
+	-g1 \
+	-s FORCE_FILESYSTEM=1 \
+	--pre-js ../prejs.txt \
+	--post-js ../postjs.txt \
+	--embed-file machines \
+	-o dasm.js
 mv dasm.js ..
 
 echo
