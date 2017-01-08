@@ -1,3 +1,4 @@
 	Module["FS"] = FS;
+	Module["getStatus"] = function() { return EXITSTATUS };
 	return Module;
 };
