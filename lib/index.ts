@@ -15,10 +15,10 @@ const moduleOptions = {
 	print: logLine,
 	printErr: logErrorLine,
 	noExitRuntime: true,
-	// Also available: preInit, preRun
+	// Also available: preInit, preRun, postRun
 };
 
-const Module:any = (dasm as any).DASM(moduleOptions);
+let Module:any;
 const log:string[] = [];
 const didCompile:boolean = false;
 
@@ -189,6 +189,8 @@ export default function(src:string, options:IOptions = {}) {
 	// Prepare vars
 	log.length = 0;
 	didCompile = true;
+
+	Module = (dasm as any).DASM(Object.assign({}, moduleOptions));
 
 	// Prepare source
 	Module.FS.writeFile(FILENAME_IN, src);
