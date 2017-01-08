@@ -10,10 +10,18 @@ export interface ISymbol {
     wasReferenced: boolean;
     wasPseudoOpCreated: boolean;
 }
+export interface ILine {
+    index: number;
+    address: number;
+    bytes: Uint8Array | undefined;
+    raw: string;
+    comment: string | undefined;
+    command: string | undefined;
+}
 export default function (src: string, options?: IOptions): {
     data: Uint8Array;
     output: string[];
-    list: string | undefined;
+    list: ILine[] | undefined;
     listRaw: string | undefined;
     symbols: ISymbol[] | undefined;
     symbolsRaw: string | undefined;

@@ -120,7 +120,7 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 
 * `data`: `Uint8Array`. The exported ROM, as a list of integers.
 * `output`: `string[]`. All data written by dasm to `stdout`.
-* (TODO) `list`: `IList[]`. A list of all parsing passes performed in the source code, and their generated list of lines.
+* `list`: `IList[]`. A list of all lines available in the source code, and their parsed info (address, bytecode, comments, command, etc).
 * `listRaw`: `string`. The raw output of the list file (equivalent to the `-L` switch).
 * `symbols`: `ISymbol[]`. A parsed list of all symbols (labels and constants) defined by the source code.
 * `symbolsRaw`: `string`. The raw output of the symbols file (equivalent to the `-s` switch).
@@ -139,7 +139,6 @@ TypeScript definitions are included with this distribution, so TypeScript projec
   * write files to FS
 * `parameters` option
   * parse option
-* Parse `-L` list output in a more concise way
 * More examples, including on how to include files
 * More tests: all options
 * Command-line package? (`dasm-cli`)

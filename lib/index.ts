@@ -38,6 +38,15 @@ export interface ISymbol {
 	wasPseudoOpCreated: boolean;
 }
 
+export interface ILine {
+	index: number;
+	address: number;
+	bytes: Uint8Array|undefined;
+	raw: string;
+	comment: string|undefined;
+	command: string|undefined;
+}
+
 
 // Methods and functions
 
@@ -49,11 +58,90 @@ function logErrorLine(s:string) {
 	log.push("[ERROR] " + s);
 }
 
-function parseList(listFile:string) {
-	return listFile;
+function parseList(listFile:string):ILine[] {
+	const lines:ILine[] = [];
+	const rawLines = listFile.split("\n");
+	const metaFind = /^------- /;
+	const unknownFind = /^ *[0-9]+ *[0-9A-Fa-f]{4,5} \?{4}/;
+	const addressFind = /^ *[0-9]+ *([0-9A-Fa-fU]{4,5})/;
+	const commentFind = /;(.*)$/;
+	const byteCodeFind = /^.*\t\t *([0-9a-fA-F ]+)\t/;
+	const commandFind = /.*?\t\t.*?\t([^;]*)/;
+	rawLines.forEach((rawLine) => {
+		if (rawLine && !rawLine.match(metaFind)) {
+			// Address
+			let address = -1;
+			if (!rawLine.match(unknownFind)) {
+				// Known location
+				address = parseNumber(((rawLine.match(addressFind) as any)[1] as string));
+			}
+
+			// Comment
+			let comment:string|undefined = undefined;
+			const commentMatches:any = rawLine.match(commentFind);
+			if (commentMatches) {
+				comment = commentMatches[1] as string;
+			}
+
+			// Bytes
+			let bytes = undefined;
+			let byteMatches:any = rawLine.match(byteCodeFind);
+			if (byteMatches) {
+				bytes = parseBytes((byteMatches[1] as string));
+			}
+
+			// Commands
+			let command = undefined;
+			let commandMatches:any = rawLine.match(commandFind);
+			if (commandMatches) {
+				command = commandMatches[1] as string;
+				if (!command.trim()) command = undefined;
+			}
+
+			lines.push({
+				index: lines.length,
+				address,
+				bytes,
+				raw: rawLine,
+				comment,
+				command,
+			});
+		}
+	});
+	return lines;
 }
 
-function parseSymbols(symbolsFile:string) {
+function parseBytes(value:string) {
+	const values = value.split(" ");
+	const bytes = new Uint8Array(values.length);
+	values.forEach((byteValue, index) => {
+		bytes[index] = parseInt(byteValue, 16);
+	});
+	return bytes;
+}
+
+function parseNumber(value:string) {
+	value = value.toLowerCase();
+	const inValue = value.substr(1);
+	if (value.substr(0, 1) === "0") {
+		// Octal
+		return parseInt(inValue, 8);
+	} else if (value.substr(0, 1) === "%") {
+		// Binary
+		return parseInt(inValue, 2);
+	} else if (value.substr(0, 1) === "u") {
+		// Unsigned decimal integer (not documented?)
+		return parseInt(inValue, 10);
+	} else if (value.substr(0, 1) === "f") {
+		// Hexadecimal (not documented?)
+		return parseInt(inValue, 16);
+	} else {
+		console.warn("dasm list parsing error: number [" + value + "] could not be properly parsed with the known formats. Assuming decimal.");
+		return parseInt(value, 10);
+	}
+}
+
+function parseSymbols(symbolsFile:string):ISymbol[] {
 	const symbols:ISymbol[] = [];
 	const lines = symbolsFile.split("\n");
 	lines.forEach((line) => {
