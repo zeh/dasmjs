@@ -60,7 +60,41 @@ describe("dasm (ES5)", function() {
 		var fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).to.equal(fileSym);
 	});
+
+	it("compiles complex code (combat)", function() {
+		var pathSrc = path.join(__dirname, "/roms/dicombat.asm");
+		var pathOut = path.join(__dirname, "/roms/dicombat.out");
+		var pathSym = path.join(__dirname, "/roms/dicombat.sym");
+		var pathLst = path.join(__dirname, "/roms/dicombat.lst");
+
+		// Read
+		var src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
+		expect(src.length).to.equal(68825);
+
+		// Compile
+		var result = dasm(src, { format: 3, machine: "atari2600" });
+
+		// Check ROM
+		var myOut = result.data;
+		expect(myOut.length).to.equal(2048);
+
+		var fileOut = fs.readFileSync(pathOut);
+		expect(myOut).to.deep.equal(bufferToArray(fileOut));
+
+		// Check list
+		var myLst = result.listRaw.split("\n");
+		var fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
+		expect(filterList(myLst)).to.deep.equal(filterList(fileLst));
+
+		// Check symbols
+		var mySym = result.symbolsRaw;
+		var fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
+		expect(mySym).to.equal(fileSym);
+	});
 });
 
 
-// TODO: ./bin/dasm dicombat.asm -f3 -odicombat.out -ldicombat.lst -sdicombat.sym -Imachines/atari2600
+// TODO:
+// Includes
+//var vcs = fs.readFileSync(path.join(__dirname, "/roms/atari2600/vcs.h"), { "encoding": "utf8" });
+//var result = dasm(src, { format: 3, includes: { "vcs.h": vcs, }});
