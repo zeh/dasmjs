@@ -67,7 +67,7 @@ npm install dasm --save
 Import as a module:
 
 ```JavaScript
-import * as dasm from "dasm"; // ES6
+import dasm from "dasm"; // ES6
 var dasm = require("dasm").default; // ES5
 ```
 
@@ -90,13 +90,13 @@ Advanced options can be passed to the `dasm` call via an options parameter. For 
 
 ```JavaScript
 // Create a rom using the typical Atari VCS 4096-byte format
-dasm(src, { format: 3 })
+dasm(src, { format: 3 });
 
 // Just create a rom without exporting symbols or lists
-dasm(src, { quick: true })
+dasm(src, { quick: true });
 
 // Pass original command-line parameters
-dasm(src, { parameters: "-f3 -p2 -v4 -DVER=5" })
+dasm(src, { parameters: "-f3 -p2 -v4 -DVER=5" });
 ```
 
 These are all the options currently parsed:
