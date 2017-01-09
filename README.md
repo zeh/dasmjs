@@ -95,6 +95,9 @@ dasm(src, { format: 3 });
 // Just create a rom without exporting symbols or lists
 dasm(src, { quick: true });
 
+// Typical assembly to create an Atari VCS ROM with built-in .h includes
+dasm(src, { format: 3, quick: true, machine: "atari2600" });
+
 // Pass original command-line parameters
 dasm(src, { parameters: "-f3 -p2 -v4 -DVER=5" });
 ```
@@ -106,9 +109,9 @@ These are all the options currently parsed:
   * `2`: random access segment format. Output is made of chuncks that include a 4-byte origin and length header.
   * `3`: raw format. Just the data, no headers.
 * `quick`: boolean. If set to `true`, don't export any symbol and pass list as part of its returned data. Defaults to false.
-* (TODO) `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
-* (TODO) `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the filename, and the value, its content.
-* (TODO) `machine`: target machine. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
+* `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
+* `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the filename, and the value, its content.
+* `machine`: target machine. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
 
@@ -131,16 +134,11 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 
 ## Todo
 
-* `machines` option
-  * recompile dasm with ./machine files as [--embed-file](https://kripken.github.io/emscripten-site/docs/tools_reference/emcc.html#emcc-embed-file) files
-  * parse option
-* `includes` option
-  * parse option
-  * write files to FS
-* `parameters` option
-  * parse option
 * More examples, including on how to include files
+* Get exitcode from executable in case of errors?
+* Fix: hanging when files are not found?
 * More tests: all options
+* Run as a worker?
 * Command-line package? (`dasm-cli`)
 
 Contributions are welcome.
