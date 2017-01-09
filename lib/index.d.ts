@@ -2,6 +2,7 @@ export interface IOptions {
     quick?: boolean;
     format?: "1" | "2" | "3" | 1 | 2 | 3;
     parameters?: string;
+    machine?: "atari2600" | "channel-f";
     includes?: {
         [key: string]: string;
     };

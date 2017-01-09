@@ -29,6 +29,7 @@ export interface IOptions {
 	quick?: boolean;
 	format?: "1"|"2"|"3"|1|2|3;
 	parameters?: string;
+	machine?: "atari2600"|"channel-f";
 	includes?: { [key:string]:string; };
 }
 
@@ -182,6 +183,27 @@ function parseSymbols(symbolsFile:string):ISymbol[] {
 	return symbols;
 }
 
+/*
+// For testing purposes
+function showDirectory() {
+	console.log(logDir(Module.FS.lookupPath("/", {}).node, 0));
+}
+
+function logDir(node, level) {
+	const spaces = "                             ";
+	let str = node.name;
+	if (level < 6) {
+		//str += "\n" + typeof(node.contents);
+		if (!(node.contents instanceof Uint8Array)) {
+			for (var ff in node.contents) {
+				str += "\n" + logDir(node.contents[ff], level + 1);
+			}
+		}
+	}
+	return spaces.substr(0, level * 2) + str;
+}
+*/
+
 
 // Final export
 
@@ -207,6 +229,9 @@ export default function(src:string, options:IOptions = {}) {
 	}
 	if (options.parameters) {
 		args = args.concat(options.parameters.split(" "));
+	}
+	if (options.machine) {
+		args.push("-I" + "/machines/" + options.machine + "/");
 	}
 
 	// Include files as needed
