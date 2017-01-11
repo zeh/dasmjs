@@ -44,11 +44,14 @@ emcc src/dasm.bc \
 	--memory-init-file 0 \
 	-g1 \
 	-s FORCE_FILESYSTEM=1 \
-	--pre-js ../prejs.txt \
+	-s MODULARIZE=1 \
+	-s "EXPORT_NAME='DASM'" \
 	--post-js ../postjs.txt \
 	--embed-file machines \
 	--exclude-file machines/channel-f/README \
 	-o dasm.js
+
+echo "var exports = module.exports = { DASM: DASM };" >> dasm.js
 mv dasm.js ..
 
 echo

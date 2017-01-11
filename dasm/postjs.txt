@@ -1,4 +1,2 @@
-	Module["FS"] = FS;
-	Module["getStatus"] = function() { return EXITSTATUS };
-	return Module;
-};
+DASM["FS"] = FS;
+DASM["getStatus"] = function() { return EXITSTATUS };
