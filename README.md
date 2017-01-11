@@ -44,6 +44,8 @@ Among other features, dasm sports:
 * expressions using [] for parenthesis
 * complex pseudo ops, repeat loops, macros, etc
 
+This port of dasm was created so I could have dasm compiling working in a [vscode-dasm](https://github.com/zeh/vscode-dasm), my Visual Studio Code extension that aims to allow Atari development and debugging from within Visual Studio Code.
+
 ## Technical information
 
 This package uses version 2.20.11 of dasm. It supports the following processor architectures:
@@ -115,7 +117,7 @@ These are all the options currently parsed:
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
 
-Check [any cloned copy of the dasm documentation on GitHub](https://github.com/search?utf8=%E2%9C%93&q=%22DOCUMENTATION+FOR+DASM%2C+a+high+level+macro+cross+assembler+for%3A%22+extension%3Atxt&type=Code&ref=searchresults) for a list of all command-line switches available, and more information on binary formats.
+Check [the dasm documentation](https://github.com/zeh/dasmjs/blob/master/dasm/src/doc/dasm.txt) for a list of all command-line switches available, for more information on binary formats, and for a list of all macros available.
 
 ### Returned object
 
@@ -147,6 +149,9 @@ Contributions are welcome.
 
 Check [the release list](https://github.com/zeh/dasmjs/releases) for a list of what has changed in every new version.
 
+## Acknowledgements
+
+The dasm macro assembler was created by by Matthew Dillon. It was further augmented by Olaf "Rhialto" Seibert, Andrew Davie, and Peter H. Froehlich.
 
 ## License
 
