@@ -44,7 +44,7 @@ Among other features, dasm sports:
 * expressions using [] for parenthesis
 * complex pseudo ops, repeat loops, macros, etc
 
-This port of dasm was created so I could have dasm compiling working in a [vscode-dasm](https://github.com/zeh/vscode-dasm), my Visual Studio Code extension that aims to allow Atari development and debugging from within Visual Studio Code.
+This port of dasm was created so I could have dasm compiling working in [vscode-dasm](https://github.com/zeh/vscode-dasm), my Visual Studio Code extension that aims to allow Atari development and debugging from within Visual Studio Code.
 
 ## Technical information
 
