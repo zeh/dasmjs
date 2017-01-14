@@ -59,12 +59,13 @@ function parseList(listFile:string):ILine[] {
 	const lines:ILine[] = [];
 	const rawLines = listFile.split("\n");
 	const metaFind = /^------- /;
-	const unknownFind = /^ *[0-9]+ *[0-9A-Fa-f]{4,5} \?{4}/;
-	const addressFind = /^ *[0-9]+ *([0-9A-Fa-fU]{4,5})/;
+	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-f]{4,5}\s\?{4}/;
+	const addressFind = /^\s*[0-9]+\s*([0-9A-Fa-fU]{4,5})/;
 	const commentFind = /;(.*)$/;
 	const byteCodeFind = /^.*\t\t *([0-9a-fA-F ]+)\t/;
 	const commandFind = /.*?\t\t.*?\t([^;]*)/;
 	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
+	const abortFind = /^Aborting assembly/;
 	rawLines.forEach((rawLine) => {
 		if (rawLine && !rawLine.match(metaFind)) {
 			// Default values
@@ -80,6 +81,8 @@ function parseList(listFile:string):ILine[] {
 			if (errorMatches) {
 				errorMessage = errorMatches[2] as string;
 				lineNumber = parseInt(errorMatches[1] as string, 10);
+				didCompile = false;
+			} else if (rawLine.match(abortFind)) {
 				didCompile = false;
 			} else {
 				// If not, parse properly
