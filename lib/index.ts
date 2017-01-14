@@ -75,6 +75,7 @@ function parseList(listFile:string):ILine[] {
 			let comment = undefined;
 			let bytes = undefined;
 			let command = undefined;
+			let skip = false;
 
 			// First, catch errors
 			const errorMatches:any = rawLine.match(errorFind);
@@ -84,6 +85,7 @@ function parseList(listFile:string):ILine[] {
 				didCompile = false;
 			} else if (rawLine.match(abortFind)) {
 				didCompile = false;
+				skip = true;
 			} else {
 				// If not, parse properly
 				// Address
@@ -112,15 +114,17 @@ function parseList(listFile:string):ILine[] {
 				}
 			}
 
-			lines.push({
-				number: lineNumber,
-				address,
-				bytes,
-				raw: rawLine,
-				errorMessage,
-				comment,
-				command,
-			});
+			if (!skip) {
+				lines.push({
+					number: lineNumber,
+					address,
+					bytes,
+					raw: rawLine,
+					errorMessage,
+					comment,
+					command,
+				});
+			}
 		}
 	});
 	return lines;
