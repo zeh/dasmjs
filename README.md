@@ -117,7 +117,9 @@ These are all the options currently parsed:
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
 
-Check [the dasm documentation](https://github.com/zeh/dasmjs/blob/master/dasm/src/doc/dasm.txt) for a list of all command-line switches available, for more information on binary formats, and for a list of all macros available.
+For more examples, check the [test files](test) on reference implementations of typical compilations.
+
+Also check [the dasm documentation](https://github.com/zeh/dasmjs/blob/master/dasm/src/doc/dasm.txt) for a list of all command-line switches available, for more information on binary formats, and for a list of all macros available.
 
 ### Returned object
 
@@ -132,16 +134,14 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 * `exitStatus`: `number`. A code indicating the exit status of the assembler module. Normally `0` if exited without problems, or `1` if aborted prematurely.
 * `success`: `boolean`. `true` if successfully compiled, false if `otherwise`.
 
+Of specially note are the `list` and `symbols` objects. Those include parsed information about the source code, including line-specific error messages.
+
 ### More information
 
 TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. Non-TypeScript JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
 
 ## Todo
 
-* Parse missing files (from output) and give error on compiling
-* Parse missing symbols (from output) and give error on compiling
-* Have an error/warning list instead, rather than using the current "list"/output?
-* More examples, including on how to include files
 * More tests: all options
 * Run as a worker?
 * Command-line package? (`dasm-cli`)
