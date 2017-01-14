@@ -148,7 +148,7 @@ function parseList(listFile:string):ILine[] {
 	return lines;
 }
 
-function mergeLinesWithGlobalErrors(lines, errorLines) {
+function mergeLinesWithGlobalErrors(lines:ILine[], errorLines:ILine[]) {
 	const newLines:ILine[] = [];
 	errorLines.forEach((error) => {
 		const errorLine = lines.find((line) => line.number === error.number);
@@ -167,31 +167,73 @@ function mergeLinesWithGlobalErrors(lines, errorLines) {
 function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 	// Adds messages from the output to the line-based list
 	let newLines:ILine[] = [];
-	const warningFind = /Warning: (.*)/;
+	const warningFind = /^Warning: (.*)/;
+	const unresolvedSymbolStartFind = /^--- Unresolved Symbol List/;
+	const unresolvedSymbolEndFind = /^--- [0-9]+ Unresolved Symbol/;
+	const unresolvedSymbolFind = /^(.*?)\s/;
 	const fileNotFoundErrorFind = /Unable to open '(.*)'$/;
+	let isListingUnresolvedSymbols = false;
 	outputLines.forEach((outputLine) => {
 		let errorMessage = undefined;
 		let lineNumber = 0;
+		let lineNumbers:number[] = [];
 
-		const warningMatches:any = outputLine.match(warningFind);
-		if (warningMatches) {
-			errorMessage = warningMatches[1] as string;
-			const fileMatch:any = errorMessage.match(fileNotFoundErrorFind);
-			if (fileMatch) {
-				lineNumber = findStringInLines(listLines, fileMatch[1] as string);
+		if (isListingUnresolvedSymbols) {
+			const unresolvedSymbolEndMatches:any = outputLine.match(unresolvedSymbolEndFind);
+			if (unresolvedSymbolEndMatches) {
+				// List of unresolved symbols - END
+				isListingUnresolvedSymbols = false;
+			} else {
+				// Unresolved symbol
+				const unresolvedSymbolMatches:any = outputLine.match(unresolvedSymbolFind);
+				if (unresolvedSymbolMatches) {
+					const symbolName = unresolvedSymbolMatches[1] as string;
+					// Injected error message
+					errorMessage = "Undefined Symbol '" + symbolName + "'";
+					lineNumber = findStringInLines(listLines, symbolName);
+					while (lineNumber > 0) {
+						lineNumbers.push(lineNumber);
+						lineNumber = findStringInLines(listLines, symbolName, lineNumber);
+					}
+				}
+			}
+		} else {
+			const unresolvedSymbolStartMatches:any = outputLine.match(unresolvedSymbolStartFind);
+			if (unresolvedSymbolStartMatches) {
+				// List of unresolved symbols - START
+				isListingUnresolvedSymbols = true;
+			} else {
+				// Warnings
+				const warningMatches:any = outputLine.match(warningFind);
+				if (warningMatches) {
+					errorMessage = warningMatches[1] as string;
+					const fileMatch:any = errorMessage.match(fileNotFoundErrorFind);
+					if (fileMatch) {
+						lineNumber = findStringInLines(listLines, fileMatch[1] as string);
+					}
+				}
 			}
 		}
 
 		if (errorMessage) {
-			newLines.push({
+			const newLine = {
 				number: lineNumber > -1 ? lineNumber : 0,
-				address: undefined,
+				address: -1,
 				bytes: undefined,
 				raw: outputLine,
 				errorMessage,
 				comment: undefined,
 				command: undefined,
-			});
+			};
+			if (lineNumbers.length > 0) {
+				// Applies to more than one line
+				lineNumbers.forEach((lineNumberItem) => {
+					newLines.push(Object.assign({}, newLine, { number: lineNumberItem }));
+				});
+			} else {
+				// Just one line
+				newLines.push(newLine);
+			}
 		}
 	});
 
@@ -199,10 +241,10 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 	return listLines ? mergeLinesWithGlobalErrors(listLines, newLines) : newLines;
 }
 
-function findStringInLines(lines, needle) {
+function findStringInLines(lines:ILine[], needle:string, startLine:number = 0) {
 	if (!lines) return -1;
 
-	for (let i = 0; i < lines.length; i++) {
+	for (let i = startLine; i < lines.length; i++) {
 		if (lines[i].raw && lines[i].raw.indexOf(needle) > -1) return lines[i].number;
 	}
 
