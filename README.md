@@ -129,6 +129,8 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 * `listRaw`: `string`. The raw output of the list file (equivalent to the `-L` switch).
 * `symbols`: `ISymbol[]`. A parsed list of all symbols (labels and constants) defined by the source code.
 * `symbolsRaw`: `string`. The raw output of the symbols file (equivalent to the `-s` switch).
+* `exitStatus`: `number`. A code indicating the exit status of the assembler module. Normally `0` if exited without problems, or `1` if aborted prematurely.
+* `success`: `boolean`. `true` if successfully compiled, false if `otherwise`.
 
 ### More information
 
