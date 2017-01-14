@@ -136,9 +136,10 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 
 ## Todo
 
+* Parse missing files (from output) and give error on compiling
+* Parse missing symbols (from output) and give error on compiling
+* Have an error/warning list instead, rather than using the current "list"/output?
 * More examples, including on how to include files
-* Get exitcode from executable in case of errors?
-* Fix: hanging when files are not found?
 * More tests: all options
 * Run as a worker?
 * Command-line package? (`dasm-cli`)
