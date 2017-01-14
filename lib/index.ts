@@ -56,7 +56,7 @@ function logErrorLine(s:string) {
 }
 
 function parseList(listFile:string):ILine[] {
-	const lines:ILine[] = [];
+	let lines:ILine[] = [];
 	const rawLines = listFile.split("\n");
 	const metaFind = /^------- /;
 	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-f]{4,5}\s\?{4}/;
@@ -66,16 +66,20 @@ function parseList(listFile:string):ILine[] {
 	const commandFind = /.*?\t\t.*?\t([^;]*)/;
 	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
 	const abortFind = /^Aborting assembly/;
+	const breakingErrors:ILine[] = [];
+	let lineOffset:number = 0;
+	let currentLine:number = 1;
 	rawLines.forEach((rawLine) => {
 		if (rawLine && !rawLine.match(metaFind)) {
 			// Default values
-			let lineNumber = lines.length + 1;
+			let lineNumber = currentLine + lineOffset;
 			let errorMessage = undefined;
 			let address = -1;
 			let comment = undefined;
 			let bytes = undefined;
 			let command = undefined;
 			let skip = false;
+			let wasBreakingError = false;
 
 			// First, catch errors
 			const errorMatches:any = rawLine.match(errorFind);
@@ -83,6 +87,8 @@ function parseList(listFile:string):ILine[] {
 				errorMessage = errorMatches[2] as string;
 				lineNumber = parseInt(errorMatches[1] as string, 10);
 				didCompile = false;
+				wasBreakingError = true;
+				lineOffset--;
 			} else if (rawLine.match(abortFind)) {
 				didCompile = false;
 				skip = true;
@@ -115,7 +121,7 @@ function parseList(listFile:string):ILine[] {
 			}
 
 			if (!skip) {
-				lines.push({
+				const newLine = {
 					number: lineNumber,
 					address,
 					bytes,
@@ -123,10 +129,32 @@ function parseList(listFile:string):ILine[] {
 					errorMessage,
 					comment,
 					command,
-				});
+				};
+
+				if (wasBreakingError) {
+					breakingErrors.push(newLine);
+				} else {
+					lines.push(newLine);
+				}
 			}
+
+			currentLine++;
 		}
 	});
+
+	// Merge breaking errors with their lines
+	const newLines:ILine[] = [];
+	breakingErrors.forEach((error) => {
+		const errorLine = lines.find((line) => line.number === error.number);
+		if (errorLine) {
+			errorLine.errorMessage = error.errorMessage;
+		} else {
+			// No line, will create one
+			newLines.push(error);
+		}
+	});
+	lines = lines.concat(newLines);
+
 	return lines;
 }
 
