@@ -19,8 +19,8 @@ const moduleOptions = {
 };
 
 let Module:any;
+let didCompile:boolean = false;
 const log:string[] = [];
-const didCompile:boolean = false;
 
 
 // Interfaces
