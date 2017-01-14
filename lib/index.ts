@@ -10,14 +10,6 @@ const FILENAME_SYMBOLS = "file.sym";
 
 // Variables used
 
-const moduleOptions = {
-	noInitialRun: true,
-	print: logLine,
-	printErr: logErrorLine,
-	noExitRuntime: true,
-	// Also available: preInit, preRun, postRun
-};
-
 let Module:any;
 let didCompile:boolean = false;
 const log:string[] = [];
@@ -212,6 +204,14 @@ export default function(src:string, options:IOptions = {}) {
 	log.length = 0;
 	didCompile = true;
 
+	const moduleOptions = {
+		noInitialRun: true,
+		print: logLine,
+		printErr: logErrorLine,
+		ENVIRONMENT: "WEB",
+		// Also available: preInit, preRun, postRun
+	};
+
 	Module = (dasm as any).DASM(Object.assign({}, moduleOptions));
 
 	// Prepare source
@@ -242,7 +242,13 @@ export default function(src:string, options:IOptions = {}) {
 	}
 
 	// Finally, call it
-	Module.callMain([FILENAME_IN].concat(args));
+	try {
+		Module.callMain([FILENAME_IN].concat(args));
+	} catch (e) {
+		// Fatal error: impossible to determine why
+		didCompile = false;
+		console.error("Fatal error when calling module", e);
+	}
 
 	// Get other output files
 	const listFile:string|undefined = options.quick ? undefined : Module.FS.readFile(FILENAME_LIST, { encoding: "utf8" });
