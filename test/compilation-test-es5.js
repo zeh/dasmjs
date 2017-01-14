@@ -92,9 +92,3 @@ describe("dasm (ES5)", function() {
 		expect(mySym).to.equal(fileSym);
 	});
 });
-
-
-// TODO:
-// Includes
-//var vcs = fs.readFileSync(path.join(__dirname, "/roms/atari2600/vcs.h"), { "encoding": "utf8" });
-//var result = dasm(src, { format: 3, includes: { "vcs.h": vcs, }});

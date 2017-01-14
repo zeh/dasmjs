@@ -88,4 +88,36 @@ describe("dasm (ES6)", () => {
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).to.equal(fileSym);
 	});
+
+	it("compiles complex code with includes (combat)", function() {
+		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
+		const pathOut = path.join(__dirname, "/roms/dicombat.out");
+		const pathSym = path.join(__dirname, "/roms/dicombat.sym");
+		const pathLst = path.join(__dirname, "/roms/dicombat.lst");
+		const pathVcsh = path.join(__dirname, "/roms/atari2600/vcs.h")
+
+		// Read
+		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
+		const vcsh = fs.readFileSync(pathVcsh, { "encoding": "utf8" });
+
+		// Compile
+		const result = dasm(src, { format: 3, includes: { "vcs.h": vcsh }});
+
+		// Check ROM
+		const myOut = result.data;
+		expect(myOut.length).to.equal(2048);
+
+		const fileOut = fs.readFileSync(pathOut);
+		expect(myOut).to.deep.equal(bufferToArray(fileOut));
+
+		// Check list
+		const myLst = result.listRaw.split("\n");
+		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
+		expect(filterList(myLst)).to.deep.equal(filterList(fileLst));
+
+		// Check symbols
+		const mySym = result.symbolsRaw;
+		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
+		expect(mySym).to.equal(fileSym);
+	});
 });
