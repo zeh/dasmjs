@@ -120,4 +120,51 @@ describe("dasm (ES6)", () => {
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).to.equal(fileSym);
 	});
+
+	it("fails gracefuly (simple)", function() {
+		const src = " a";
+
+		// Compile
+		const result = dasm(src);
+
+		expect(result.success).to.equal(false);
+		expect(result.list.length).to.equal(1);
+		expect(result.list[0].errorMessage).to.exist;
+	});
+
+	it("fails gracefuly (aborted)", function() {
+		const src = " a = 10\n processor";
+
+		// Compile
+		const result = dasm(src);
+
+		expect(result.success).to.equal(false);
+		expect(result.list.length).to.equal(2);
+		expect(result.list[0].errorMessage).to.exist;
+		expect(result.list[1].errorMessage).to.exist;
+	});
+
+	it("fails gracefuly (missing file)", function() {
+		const src = " include doesntexist\n include somethingelse";
+
+		// Compile
+		const result = dasm(src);
+
+		expect(result.success).to.equal(true); // It will still compile
+		expect(result.list.length).to.equal(2);
+		expect(result.list[0].errorMessage).to.exist;
+		expect(result.list[1].errorMessage).to.exist;
+	});
+
+	it("fails gracefuly (missing symbol)", function() {
+		const src = " processor 6502\n lda NOTHING\n lda NOTHING\n";
+
+		// Compile
+		const result = dasm(src);
+
+		expect(result.success).to.equal(true); // It will still compile, value will be 0
+		expect(result.list.length).to.equal(3);
+		expect(result.list[1].errorMessage).to.exist;
+		expect(result.list[2].errorMessage).to.exist;
+	});
 });
