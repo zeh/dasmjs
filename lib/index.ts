@@ -143,8 +143,14 @@ function parseList(listFile:string):ILine[] {
 	});
 
 	// Merge breaking errors with their lines
+	lines = mergeLinesWithGlobalErrors(lines, breakingErrors);
+
+	return lines;
+}
+
+function mergeLinesWithGlobalErrors(lines, errorLines) {
 	const newLines:ILine[] = [];
-	breakingErrors.forEach((error) => {
+	errorLines.forEach((error) => {
 		const errorLine = lines.find((line) => line.number === error.number);
 		if (errorLine) {
 			errorLine.errorMessage = error.errorMessage;
@@ -153,9 +159,54 @@ function parseList(listFile:string):ILine[] {
 			newLines.push(error);
 		}
 	});
-	lines = lines.concat(newLines);
 
-	return lines;
+	// Merges errors with no proper lines
+	return lines.concat(newLines);
+}
+
+function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
+	// Adds messages from the output to the line-based list
+	let newLines:ILine[] = [];
+	const warningFind = /Warning: (.*)/;
+	const fileNotFoundErrorFind = /Unable to open '(.*)'$/;
+	outputLines.forEach((outputLine) => {
+		let errorMessage = undefined;
+		let lineNumber = 0;
+
+		const warningMatches:any = outputLine.match(warningFind);
+		if (warningMatches) {
+			errorMessage = warningMatches[1] as string;
+			const fileMatch:any = errorMessage.match(fileNotFoundErrorFind);
+			if (fileMatch) {
+				lineNumber = findStringInLines(listLines, fileMatch[1] as string);
+			}
+		}
+
+		if (errorMessage) {
+			newLines.push({
+				number: lineNumber > -1 ? lineNumber : 0,
+				address: undefined,
+				bytes: undefined,
+				raw: outputLine,
+				errorMessage,
+				comment: undefined,
+				command: undefined,
+			});
+		}
+	});
+
+	// Merge global errors with their lines
+	return listLines ? mergeLinesWithGlobalErrors(listLines, newLines) : newLines;
+}
+
+function findStringInLines(lines, needle) {
+	if (!lines) return -1;
+
+	for (let i = 0; i < lines.length; i++) {
+		if (lines[i].raw && lines[i].raw.indexOf(needle) > -1) return lines[i].number;
+	}
+
+	return -1;
 }
 
 function parseBytes(value:string) {
@@ -305,11 +356,17 @@ export default function(src:string, options:IOptions = {}) {
 		if (fileExists(Module.FS, FILENAME_LIST)) listFile = Module.FS.readFile(FILENAME_LIST, { encoding: "utf8" });
 	}
 
+	// The list can also include injected data from the output
+	let list = listFile ? parseList(listFile) : undefined;
+	if (list) {
+		list = parseListFromOutput(list, log);
+	}
+
 	// Return results
 	return {
 		data: fileExists(Module.FS, FILENAME_OUT) ? (Module.FS.readFile(FILENAME_OUT)) as Uint8Array : new Uint8Array(0),
 		output: log.concat(),
-		list: listFile ? parseList(listFile) : undefined,
+		list,
 		listRaw: listFile,
 		symbols: symbolsFile ? parseSymbols(symbolsFile) : undefined,
 		symbolsRaw: symbolsFile,
