@@ -178,6 +178,18 @@ function parseSymbols(symbolsFile:string):ISymbol[] {
 	return symbols;
 }
 
+function fileExists(FS:any, path:string):boolean {
+	let stream;
+	try {
+		stream = FS.open(path, "r");
+	} catch (e) {
+		return false;
+	}
+
+	FS.close(stream);
+	return true;
+}
+
 /*
 // For testing purposes
 function showDirectory() {
@@ -254,12 +266,16 @@ export default function(src:string, options:IOptions = {}) {
 	}
 
 	// Get other output files
-	const listFile:string|undefined = options.quick ? undefined : Module.FS.readFile(FILENAME_LIST, { encoding: "utf8" });
-	const symbolsFile:string|undefined = options.quick ? undefined : Module.FS.readFile(FILENAME_SYMBOLS, { encoding: "utf8" });
+	let listFile:string|undefined = undefined;
+	let symbolsFile:string|undefined = undefined;
+	if (!options.quick) {
+		if (fileExists(Module.FS, FILENAME_SYMBOLS)) symbolsFile = Module.FS.readFile(FILENAME_SYMBOLS, { encoding: "utf8" });
+		if (fileExists(Module.FS, FILENAME_LIST)) listFile = Module.FS.readFile(FILENAME_LIST, { encoding: "utf8" });
+	}
 
 	// Return results
 	return {
-		data: Module.FS.readFile(FILENAME_OUT) as Uint8Array,
+		data: fileExists(Module.FS, FILENAME_OUT) ? (Module.FS.readFile(FILENAME_OUT)) as Uint8Array : new Uint8Array(0),
 		output: log.concat(),
 		list: listFile ? parseList(listFile) : undefined,
 		listRaw: listFile,
