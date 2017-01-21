@@ -268,8 +268,15 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 function findStringInLines(lines:ILine[], needle:string, startLineIndex:number = 0) {
 	if (!lines) return -1;
 
+	let commentStart;
+	let lineRaw;
 	for (let i = startLineIndex; i < lines.length; i++) {
-		if (lines[i].raw && lines[i].raw.indexOf(needle) > -1) return i;
+		lineRaw = lines[i].raw;
+		if (lineRaw) {
+			commentStart = lineRaw.indexOf(";");
+			if (commentStart > -1) lineRaw = lineRaw.substr(0, commentStart);
+			if (lineRaw.indexOf(needle) > -1) return i;
+		}
 	}
 
 	return -1;
