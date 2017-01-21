@@ -17,6 +17,7 @@ export interface ISymbol {
 }
 export interface ILine {
     number: number;
+    filename: string | undefined;
     address: number;
     bytes: Uint8Array | undefined;
     raw: string;
