@@ -20,7 +20,10 @@
     "assembly",
     "emscripten",
     "atari",
-    "6502"
+    "6502",
+    "vcs",
+    "2600",
+    "6507"
   ],
   "author": "Zeh Fernando",
   "license": "GPL-2.0",
