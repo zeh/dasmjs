@@ -156,6 +156,18 @@ describe("dasm (ES6)", () => {
 		expect(result.list[1].errorMessage).to.exist;
 	});
 
+	it("fails gracefuly (missing file), doesn't mismatch error location", function() {
+		const src = " include doesntexist\n include somethingelse";
+
+		// Compile
+		const result = dasm(" ; vcs.h\n include vcs.h");
+
+		expect(result.success).to.equal(true); // It will still compile
+		expect(result.list.length).to.equal(2);
+		expect(result.list[0].errorMessage).to.not.exist;
+		expect(result.list[1].errorMessage).to.exist;
+	});
+
 	it("fails gracefuly (missing symbol)", function() {
 		const src = " processor 6502\n lda NOTHING\n lda NOTHING\n";
 
