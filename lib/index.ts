@@ -36,6 +36,7 @@ export interface ISymbol {
 
 export interface ILine {
 	number: number;
+	filename: string|undefined;
 	address: number;
 	bytes: Uint8Array|undefined;
 	raw: string;
@@ -58,7 +59,8 @@ function logErrorLine(s:string) {
 function parseList(listFile:string):ILine[] {
 	let lines:ILine[] = [];
 	const rawLines = listFile.split("\n");
-	const metaFind = /^------- /;
+	const metaFileFind = /^------- FILE\s(.+?)(\s|$)/;
+	const lineNumberFind = /^\s+([0-9]+)\s/;
 	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-f]{4,5}\s\?{4}/;
 	const addressFind = /^\s*[0-9]+\s*([0-9A-Fa-fU]{4,5})/;
 	const commentFind = /;(.*)$/;
@@ -67,78 +69,89 @@ function parseList(listFile:string):ILine[] {
 	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
 	const abortFind = /^Aborting assembly/;
 	const breakingErrors:ILine[] = [];
-	let lineOffset:number = 0;
-	let currentLine:number = 1;
-	rawLines.forEach((rawLine) => {
-		if (rawLine && !rawLine.match(metaFind)) {
-			// Default values
-			let lineNumber = currentLine + lineOffset;
-			let errorMessage = undefined;
-			let address = -1;
-			let comment = undefined;
-			let bytes = undefined;
-			let command = undefined;
-			let skip = false;
-			let wasBreakingError = false;
-
-			// First, catch errors
-			const errorMatches:any = rawLine.match(errorFind);
-			if (errorMatches) {
-				errorMessage = errorMatches[2] as string;
-				lineNumber = parseInt(errorMatches[1] as string, 10);
-				didCompile = false;
-				wasBreakingError = true;
-				lineOffset--;
-			} else if (rawLine.match(abortFind)) {
-				didCompile = false;
-				skip = true;
+	let currentLine:number = -1;
+	let filename:string|undefined = undefined;
+	rawLines.forEach((rawLine, index) => {
+		if (rawLine) {
+			const metaFileMatches = rawLine.match(metaFileFind);
+			if (metaFileMatches) {
+				// File start
+				filename = metaFileMatches[1] as string;
+				if (filename === FILENAME_IN) filename = undefined;
 			} else {
-				// If not, parse properly
-				// Address
-				if (!rawLine.match(unknownFind)) {
-					// Known location
-					address = parseNumber(((rawLine.match(addressFind) as any)[1] as string));
-				}
+				// Default values
+				let errorMessage = undefined;
+				let address = -1;
+				let comment = undefined;
+				let bytes = undefined;
+				let command = undefined;
+				let skip = false;
+				let wasBreakingError = false;
 
-				// Comment
-				const commentMatches:any = rawLine.match(commentFind);
-				if (commentMatches) {
-					comment = commentMatches[1] as string;
-				}
-
-				// Bytes
-				let byteMatches:any = rawLine.match(byteCodeFind);
-				if (byteMatches) {
-					bytes = parseBytes((byteMatches[1] as string));
-				}
-
-				// Commands
-				let commandMatches:any = rawLine.match(commandFind);
-				if (commandMatches) {
-					command = commandMatches[1] as string;
-					if (!command.trim()) command = undefined;
-				}
-			}
-
-			if (!skip) {
-				const newLine = {
-					number: lineNumber,
-					address,
-					bytes,
-					raw: rawLine,
-					errorMessage,
-					comment,
-					command,
-				};
-
-				if (wasBreakingError) {
-					breakingErrors.push(newLine);
+				// First, catch errors
+				const errorMatches:any = rawLine.match(errorFind);
+				if (errorMatches) {
+					errorMessage = errorMatches[2] as string;
+					currentLine = parseInt(errorMatches[1] as string, 10);
+					didCompile = false;
+					wasBreakingError = true;
+				} else if (rawLine.match(abortFind)) {
+					didCompile = false;
+					skip = true;
 				} else {
-					lines.push(newLine);
+					// If not, parse properly
+
+					// Current line
+					const lineNumberMatches = rawLine.match(lineNumberFind);
+					if (lineNumberMatches) {
+						currentLine = parseInt(lineNumberMatches[1] as string, 10);
+					}
+
+					// Address
+					if (!rawLine.match(unknownFind)) {
+						// Known location
+						address = parseNumber(((rawLine.match(addressFind) as any)[1] as string));
+					}
+
+					// Comment
+					const commentMatches = rawLine.match(commentFind);
+					if (commentMatches) {
+						comment = commentMatches[1] as string;
+					}
+
+					// Bytes
+					let byteMatches = rawLine.match(byteCodeFind);
+					if (byteMatches) {
+						bytes = parseBytes((byteMatches[1] as string));
+					}
+
+					// Commands
+					let commandMatches = rawLine.match(commandFind);
+					if (commandMatches) {
+						command = commandMatches[1] as string;
+						if (!command.trim()) command = undefined;
+					}
+				}
+
+				if (!skip) {
+					const newLine = {
+						number: currentLine,
+						filename,
+						address,
+						bytes,
+						raw: rawLine,
+						errorMessage,
+						comment,
+						command,
+					};
+
+					if (wasBreakingError) {
+						breakingErrors.push(newLine);
+					} else {
+						lines.push(newLine);
+					}
 				}
 			}
-
-			currentLine++;
 		}
 	});
 
@@ -151,7 +164,7 @@ function parseList(listFile:string):ILine[] {
 function mergeLinesWithGlobalErrors(lines:ILine[], errorLines:ILine[]) {
 	const newLines:ILine[] = [];
 	errorLines.forEach((error) => {
-		const errorLine = lines.find((line) => line.number === error.number);
+		const errorLine = lines.find((line) => line.number === error.number && line.filename === error.filename);
 		if (errorLine) {
 			errorLine.errorMessage = error.errorMessage;
 		} else {
@@ -175,41 +188,48 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 	let isListingUnresolvedSymbols = false;
 	outputLines.forEach((outputLine) => {
 		let errorMessage = undefined;
-		let lineNumber = 0;
+		let lineNumber = -1;
 		let lineNumbers:number[] = [];
+		let filename:string|undefined = undefined;
+		let filenames:Array<string|undefined> = [];
 
 		if (isListingUnresolvedSymbols) {
-			const unresolvedSymbolEndMatches:any = outputLine.match(unresolvedSymbolEndFind);
+			const unresolvedSymbolEndMatches = outputLine.match(unresolvedSymbolEndFind);
 			if (unresolvedSymbolEndMatches) {
 				// List of unresolved symbols - END
 				isListingUnresolvedSymbols = false;
 			} else {
 				// Unresolved symbol
-				const unresolvedSymbolMatches:any = outputLine.match(unresolvedSymbolFind);
+				const unresolvedSymbolMatches = outputLine.match(unresolvedSymbolFind);
 				if (unresolvedSymbolMatches) {
 					const symbolName = unresolvedSymbolMatches[1] as string;
 					// Injected error message
 					errorMessage = "Undefined Symbol '" + symbolName + "'";
-					lineNumber = findStringInLines(listLines, symbolName);
-					while (lineNumber > 0) {
-						lineNumbers.push(lineNumber);
-						lineNumber = findStringInLines(listLines, symbolName, lineNumber);
+					let lineIndex = findStringInLines(listLines, symbolName);
+					while (lineIndex > -1) {
+						lineNumbers.push(listLines[lineIndex].number);
+						filenames.push(listLines[lineIndex].filename);
+						lineIndex = findStringInLines(listLines, symbolName, lineIndex + 1);
 					}
 				}
 			}
 		} else {
-			const unresolvedSymbolStartMatches:any = outputLine.match(unresolvedSymbolStartFind);
+			const unresolvedSymbolStartMatches = outputLine.match(unresolvedSymbolStartFind);
 			if (unresolvedSymbolStartMatches) {
 				// List of unresolved symbols - START
 				isListingUnresolvedSymbols = true;
 			} else {
 				// Warnings
-				const warningMatches:any = outputLine.match(warningFind);
+				const warningMatches = outputLine.match(warningFind);
 				if (warningMatches) {
 					errorMessage = warningMatches[1] as string;
-					const fileMatch:any = errorMessage.match(fileNotFoundErrorFind);
+					const fileMatch = errorMessage.match(fileNotFoundErrorFind);
 					if (fileMatch) {
-						lineNumber = findStringInLines(listLines, fileMatch[1] as string);
+						let lineIndex = findStringInLines(listLines, fileMatch[1] as string);
+						if (lineIndex > -1) {
+							lineNumber = listLines[lineIndex].number;
+							filename = listLines[lineIndex].filename;
+						}
 					}
 				}
 			}
@@ -217,7 +237,8 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 
 		if (errorMessage) {
 			const newLine = {
-				number: lineNumber > -1 ? lineNumber : 0,
+				number: lineNumber,
+				filename: filename,
 				address: -1,
 				bytes: undefined,
 				raw: outputLine,
@@ -227,8 +248,11 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 			};
 			if (lineNumbers.length > 0) {
 				// Applies to more than one line
-				lineNumbers.forEach((lineNumberItem) => {
-					newLines.push(Object.assign({}, newLine, { number: lineNumberItem }));
+				lineNumbers.forEach((lineNumberItem, index) => {
+					newLines.push(Object.assign({}, newLine, {
+						number: lineNumberItem,
+						filename: filenames[index],
+					}));
 				});
 			} else {
 				// Just one line
@@ -241,11 +265,11 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 	return listLines ? mergeLinesWithGlobalErrors(listLines, newLines) : newLines;
 }
 
-function findStringInLines(lines:ILine[], needle:string, startLine:number = 0) {
+function findStringInLines(lines:ILine[], needle:string, startLineIndex:number = 0) {
 	if (!lines) return -1;
 
-	for (let i = startLine; i < lines.length; i++) {
-		if (lines[i].raw && lines[i].raw.indexOf(needle) > -1) return lines[i].number;
+	for (let i = startLineIndex; i < lines.length; i++) {
+		if (lines[i].raw && lines[i].raw.indexOf(needle) > -1) return i;
 	}
 
 	return -1;
