@@ -61,11 +61,11 @@ function parseList(listFile:string):ILine[] {
 	const rawLines = listFile.split("\n");
 	const metaFileFind = /^------- FILE\s(.+?)(\s|$)/;
 	const lineNumberFind = /^\s+([0-9]+)\s/;
-	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-f]{4,5}\s\?{4}/;
-	const addressFind = /^\s*[0-9]+\s*([0-9A-Fa-fU]{4,5})/;
+	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-fUuDd%]{4,5}\s\?{4}/;
+	const addressFind = /^\s*[0-9]+\s*([0-9A-Fa-fUuDd%]{4,5})/;
 	const commentFind = /;(.*)$/;
-	const byteCodeFind = /^.*\t\t *([0-9a-fA-F ]+)\t/;
-	const commandFind = /.*?\t\t.*?\t([^;]*)/;
+	const byteCodeFind = /^\s+[0-9]+\s+[0-9a-fFuUdD%]{4,5}(\s\?{4}|\t)\t *([^;\t]*)/;
+	const commandFind = /^\s+[0-9]+\s+[0-9a-fFuUdD%]{4,5}(\s\?{4}|\t)\t *([^;\t]*)\t([^;\n]*)(;|$)/;
 	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
 	const abortFind = /^Aborting assembly/;
 	const breakingErrors:ILine[] = [];
@@ -122,13 +122,13 @@ function parseList(listFile:string):ILine[] {
 					// Bytes
 					let byteMatches = rawLine.match(byteCodeFind);
 					if (byteMatches) {
-						bytes = parseBytes((byteMatches[1] as string));
+						bytes = parseBytes((byteMatches[2] as string));
 					}
 
 					// Commands
 					let commandMatches = rawLine.match(commandFind);
 					if (commandMatches) {
-						command = commandMatches[1] as string;
+						command = commandMatches[3] as string;
 						if (!command.trim()) command = undefined;
 					}
 				}
