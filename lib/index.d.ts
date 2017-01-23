@@ -14,6 +14,8 @@ export interface ISymbol {
     value: number;
     wasReferenced: boolean;
     wasPseudoOpCreated: boolean;
+    definitionFilename: string | undefined;
+    definitionLineNumber: number;
 }
 export interface ILine {
     number: number;
