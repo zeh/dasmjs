@@ -32,6 +32,8 @@ export interface ISymbol {
 	value: number;
 	wasReferenced: boolean;
 	wasPseudoOpCreated: boolean;
+	definitionFilename: string|undefined;
+	definitionLineNumber: number;
 }
 
 export interface ILine {
@@ -238,7 +240,7 @@ function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
 		if (errorMessage) {
 			const newLine = {
 				number: lineNumber,
-				filename: filename,
+				filename,
 				address: -1,
 				bytes: undefined,
 				raw: outputLine,
@@ -312,21 +314,33 @@ function parseNumber(value:string) {
 	}
 }
 
-function parseSymbols(symbolsFile:string):ISymbol[] {
+function parseSymbols(symbolsFile:string, list:ILine[]):ISymbol[] {
 	const symbols:ISymbol[] = [];
 	const lines = symbolsFile.split("\n");
 	lines.forEach((line) => {
 		if (line.length === 47 && line.substr(0, 3) !== "---") {
+			const name = line.substr(0, 25).trim();
 			const value = line.substr(25, 4).trim();
 			const isLabel = value.substr(0, 1) === "f";
 			const flags = line.substr(44, 2).trim();
+			let definitionFilename:string|undefined = undefined;
+			let definitionLineNumber:number = -1;
+			if (list) {
+				const definitionLine = list.find((listLine) => Boolean(listLine.command) && listLine.command.trim().substr(0, name.length) === name);
+				if (definitionLine) {
+					definitionFilename = definitionLine.filename;
+					definitionLineNumber = definitionLine.number;
+				}
+			}
 			symbols.push({
-				name: line.substr(0, 25).trim(),
+				name,
 				isLabel,
 				isConstant: !isLabel,
 				value: parseInt(isLabel ? value.substr(1) : value, 16),
 				wasReferenced: Boolean(flags.match(/r/i)),
 				wasPseudoOpCreated: Boolean(flags.match(/s/i)),
+				definitionFilename,
+				definitionLineNumber,
 			});
 		}
 
@@ -441,7 +455,7 @@ export default function(src:string, options:IOptions = {}) {
 		output: log.concat(),
 		list,
 		listRaw: listFile,
-		symbols: symbolsFile ? parseSymbols(symbolsFile) : undefined,
+		symbols: symbolsFile ? parseSymbols(symbolsFile, list) : undefined,
 		symbolsRaw: symbolsFile,
 		exitStatus: Module.getStatus() as number,
 		success: didCompile,
