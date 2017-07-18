@@ -1,6 +1,6 @@
 {
   "name": "dasm",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "An emscripten-compiled version of the dasm macro assembler",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
