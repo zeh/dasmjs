@@ -32,19 +32,19 @@ export interface ISymbol {
 	value: number;
 	wasReferenced: boolean;
 	wasPseudoOpCreated: boolean;
-	definitionFilename: string|undefined;
+	definitionFilename?: string;
 	definitionLineNumber: number;
 }
 
 export interface ILine {
 	number: number;
-	filename: string|undefined;
+	filename?: string;
 	address: number;
-	bytes: Uint8Array|undefined;
+	bytes?: Uint8Array;
 	raw: string;
-	errorMessage: string|undefined;
-	comment: string|undefined;
-	command: string|undefined;
+	errorMessage?: string;
+	comment?: string;
+	command?: string;
 }
 
 
@@ -60,20 +60,23 @@ function logErrorLine(s:string) {
 
 function parseList(listFile:string):ILine[] {
 	let lines:ILine[] = [];
-	const rawLines = listFile.split("\n");
+	const rawLinesOriginal = listFile.split("\n");
+	const rawLines = rawLinesOriginal.map((line) => convertTabsToSpaces(line));
 	const metaFileFind = /^------- FILE\s(.+?)(\s|$)/;
 	const lineNumberFind = /^\s+([0-9]+)\s/;
 	const unknownFind = /^\s*[0-9]+\s*[0-9A-Fa-fUuDd%]{4,5}\s\?{4}/;
-	const addressFind = /^\s*[0-9]+\s*([0-9A-Fa-fUuDd%]{4,5})/;
+	const addressFind = /^.{7} ([ 0-9A-Fa-fUuDd%]{5})/;
 	const commentFind = /;(.*)$/;
-	const byteCodeFind = /^\s+[0-9]+\s+[0-9a-fFuUdD%]{4,5}(\s\?{4}|\t)\t *([^;\t]*)/;
-	const commandFind = /^\s+[0-9]+\s+[0-9a-fFuUdD%]{4,5}(\s\?{4}|\t)\t *([^;\t]*)\t([^;\n]*)(;|$)/;
+	const byteCodeFind = /^[^;]{30} ([0-9a-fFuUdD% ]{8})/;
+	const commandFind = /^([^;]*)/;
 	const errorFind = /^[\w\.]* \(([0-9]+)\): error: (.*)/;
 	const abortFind = /^Aborting assembly/;
 	const breakingErrors:ILine[] = [];
 	let currentLine:number = -1;
 	let filename:string|undefined = undefined;
 	rawLines.forEach((rawLine, index) => {
+		const rawLineOriginal = rawLinesOriginal[index];
+
 		if (rawLine) {
 			const metaFileMatches = rawLine.match(metaFileFind);
 			if (metaFileMatches) {
@@ -124,13 +127,13 @@ function parseList(listFile:string):ILine[] {
 					// Bytes
 					let byteMatches = rawLine.match(byteCodeFind);
 					if (byteMatches) {
-						bytes = parseBytes((byteMatches[2] as string));
+						bytes = parseBytes((byteMatches[1] as string));
 					}
 
 					// Commands
-					let commandMatches = rawLine.match(commandFind);
+					let commandMatches = substrWithTabSpaces(rawLineOriginal, 43).match(commandFind);
 					if (commandMatches) {
-						command = commandMatches[3] as string;
+						command = commandMatches[1] as string;
 						if (!command.trim()) command = undefined;
 					}
 				}
@@ -163,6 +166,35 @@ function parseList(listFile:string):ILine[] {
 	return lines;
 }
 
+function substrWithTabSpaces(text:string, start:number, length:number = -1) {
+	// Returns a sub-string of the a string, but counting outside tabs as spaces in a similar fashion to convertTabsToSpaces()
+	let pos = 0;
+	let char = 0;
+	while (pos < start) {
+		if (text.charAt(char) === "\t") {
+			pos += 8 - (pos % 8);
+		} else {
+			pos += 1;
+		}
+		char++;
+	}
+
+	return length < 0 ? text.substr(char) : text.substr(char, length);
+}
+
+function convertTabsToSpaces(line:string) {
+	// The list file uses a strange format where it replaces 8 spaces with a tab whenever it needs to jump forward
+	// The catch is that if there's one char + 7 spaces, it still uses a tab since it tabs relative to column positions
+	let newLine = line;
+	let pos = newLine.indexOf("\t");
+	while (pos > -1) {
+		const numSpaces = 8 - (pos % 8);
+		newLine = newLine.substr(0, pos) + (("        ").substr(0, numSpaces)) + newLine.substr(pos + 1);
+		pos = newLine.indexOf("\t");
+	}
+	return newLine;
+}
+
 function mergeLinesWithGlobalErrors(lines:ILine[], errorLines:ILine[]) {
 	const newLines:ILine[] = [];
 	errorLines.forEach((error) => {
@@ -179,7 +211,7 @@ function mergeLinesWithGlobalErrors(lines:ILine[], errorLines:ILine[]) {
 	return lines.concat(newLines);
 }
 
-function parseListFromOutput(listLines:ILine[], outputLines:string[]) {
+function parseListFromOutput(listLines:ILine[], outputLines:string[]):ILine[] {
 	// Adds messages from the output to the line-based list
 	let newLines:ILine[] = [];
 	const warningFind = /^Warning: (.*)/;
@@ -294,7 +326,7 @@ function parseBytes(value:string) {
 }
 
 function parseNumber(value:string) {
-	value = value.toLowerCase();
+	value = value.trim().toLowerCase();
 	const inValue = value.substr(1);
 	if (value.substr(0, 1) === "0") {
 		// Octal
@@ -326,7 +358,7 @@ function parseSymbols(symbolsFile:string, list:ILine[]):ISymbol[] {
 			let definitionFilename:string|undefined = undefined;
 			let definitionLineNumber:number = -1;
 			if (list) {
-				const definitionLine = list.find((listLine) => Boolean(listLine.command) && listLine.command.trim().substr(0, name.length) === name);
+				const definitionLine = list.find((listLine) => listLine.command !== undefined && listLine.command.trim().startsWith(name));
 				if (definitionLine) {
 					definitionFilename = definitionLine.filename;
 					definitionLineNumber = definitionLine.number;
@@ -455,7 +487,7 @@ export default function(src:string, options:IOptions = {}) {
 		output: log.concat(),
 		list,
 		listRaw: listFile,
-		symbols: symbolsFile ? parseSymbols(symbolsFile, list) : undefined,
+		symbols: symbolsFile ? parseSymbols(symbolsFile, list ? list : []) : undefined,
 		symbolsRaw: symbolsFile,
 		exitStatus: Module.getStatus() as number,
 		success: didCompile,
