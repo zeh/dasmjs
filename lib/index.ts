@@ -34,6 +34,8 @@ export interface ISymbol {
 	wasPseudoOpCreated: boolean;
 	definitionFilename?: string;
 	definitionLineNumber: number;
+	definitionColumnStart: number;
+	definitionColumnEnd: number;
 }
 
 export interface ILine {
@@ -357,11 +359,15 @@ function parseSymbols(symbolsFile:string, list:ILine[]):ISymbol[] {
 			const flags = line.substr(44, 2).trim();
 			let definitionFilename:string|undefined = undefined;
 			let definitionLineNumber:number = -1;
+			let definitionColumnStart:number = -1;
+			let definitionColumnEnd:number = -1;
 			if (list) {
 				const definitionLine = list.find((listLine) => listLine.command !== undefined && listLine.command.trim().startsWith(name));
 				if (definitionLine) {
 					definitionFilename = definitionLine.filename;
 					definitionLineNumber = definitionLine.number;
+					definitionColumnStart = definitionLine.command ? definitionLine.command.indexOf(name) : -1;
+					definitionColumnEnd = definitionColumnStart > -1 ? definitionColumnStart + name.length : -1;
 				}
 			}
 			symbols.push({
@@ -373,6 +379,8 @@ function parseSymbols(symbolsFile:string, list:ILine[]):ISymbol[] {
 				wasPseudoOpCreated: Boolean(flags.match(/s/i)),
 				definitionFilename,
 				definitionLineNumber,
+				definitionColumnStart,
+				definitionColumnEnd,
 			});
 		}
 
