@@ -14,18 +14,20 @@ export interface ISymbol {
     value: number;
     wasReferenced: boolean;
     wasPseudoOpCreated: boolean;
-    definitionFilename: string | undefined;
+    definitionFilename?: string;
     definitionLineNumber: number;
+    definitionColumnStart: number;
+    definitionColumnEnd: number;
 }
 export interface ILine {
     number: number;
-    filename: string | undefined;
+    filename?: string;
     address: number;
-    bytes: Uint8Array | undefined;
+    bytes?: Uint8Array;
     raw: string;
-    errorMessage: string | undefined;
-    comment: string | undefined;
-    command: string | undefined;
+    errorMessage?: string;
+    comment?: string;
+    command?: string;
 }
 export default function (src: string, options?: IOptions): {
     data: Uint8Array;
