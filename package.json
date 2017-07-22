@@ -5,8 +5,9 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "mocha test/.setup.js test/**/*-test-*.js",
-    "test:watch": "mocha -w test/.setup.js test/**/*-test-*.js",
+    "test": "jest --testMatch **/test/**/*-test-*.js",
+    "test:coverage": "npm run test -- --coverage",
+    "test:watch": "npm run test -- --watchAll",
     "build": "tsc --pretty",
     "watch": "tsc --pretty --watch"
   },
@@ -39,9 +40,8 @@
   "devDependencies": {
     "babel-core": "^6.22.1",
     "babel-preset-es2015": "^6.22.0",
-    "chai": "^3.5.0",
     "core-js": "^2.4.1",
-    "mocha": "^3.2.0",
+    "jest": "^20.0.4",
     "tslint": "^4.3.1",
     "typescript": "^2.4.1"
   }

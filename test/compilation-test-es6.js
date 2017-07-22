@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import dasm from "./../lib/index";
 import * as fs from "fs";
 import * as path from "path";
@@ -23,11 +22,11 @@ function filterList(lines) {
 }
 
 describe("dasm (ES6)", () => {
-	it("is a function", function() {
-		expect(dasm).to.be.a.function;
+	test("is a function", () => {
+		expect(typeof dasm).toBe("function");
 	});
 
-	it("compiles simple code (clock)", function() {
+	test("compiles simple code (clock)", () => {
 		const pathSrc = path.join(__dirname, "/roms/clock.asm");
 		const pathOut = path.join(__dirname, "/roms/clock.out");
 		const pathSym = path.join(__dirname, "/roms/clock.sym");
@@ -35,30 +34,30 @@ describe("dasm (ES6)", () => {
 
 		// Read
 		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
-		expect(src.length).to.equal(15515);
+		expect(src.length).toEqual(15515);
 
 		// Compile
 		const result = dasm(src, { format: 3 });
 
 		// Check ROM
 		const myOut = result.data;
-		expect(myOut.length).to.equal(4096);
+		expect(myOut.length).toEqual(4096);
 
 		const fileOut = fs.readFileSync(pathOut);
-		expect(myOut).to.deep.equal(bufferToArray(fileOut));
+		expect(myOut).toEqual(bufferToArray(fileOut));
 
 		// Check list
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
-		expect(filterList(myLst)).to.deep.equal(filterList(fileLst));
+		expect(filterList(myLst)).toEqual(filterList(fileLst));
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
-		expect(mySym).to.equal(fileSym);
+		expect(mySym).toEqual(fileSym);
 	});
 
-	it("compiles complex code (combat)", function() {
+	test("compiles complex code (combat)", function() {
 		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
 		const pathOut = path.join(__dirname, "/roms/dicombat.out");
 		const pathSym = path.join(__dirname, "/roms/dicombat.sym");
@@ -66,30 +65,30 @@ describe("dasm (ES6)", () => {
 
 		// Read
 		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
-		expect(src.length).to.equal(68825);
+		expect(src.length).toEqual(68825);
 
 		// Compile
 		const result = dasm(src, { format: 3, machine: "atari2600" });
 
 		// Check ROM
 		const myOut = result.data;
-		expect(myOut.length).to.equal(2048);
+		expect(myOut.length).toEqual(2048);
 
 		const fileOut = fs.readFileSync(pathOut);
-		expect(myOut).to.deep.equal(bufferToArray(fileOut));
+		expect(myOut).toEqual(bufferToArray(fileOut));
 
 		// Check list
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
-		expect(filterList(myLst)).to.deep.equal(filterList(fileLst));
+		expect(filterList(myLst)).toEqual(filterList(fileLst));
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
-		expect(mySym).to.equal(fileSym);
+		expect(mySym).toEqual(fileSym);
 	});
 
-	it("compiles complex code with includes (combat)", function() {
+	test("compiles complex code with includes (combat)", function() {
 		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
 		const pathOut = path.join(__dirname, "/roms/dicombat.out");
 		const pathSym = path.join(__dirname, "/roms/dicombat.sym");
@@ -105,78 +104,78 @@ describe("dasm (ES6)", () => {
 
 		// Check ROM
 		const myOut = result.data;
-		expect(myOut.length).to.equal(2048);
+		expect(myOut.length).toEqual(2048);
 
 		const fileOut = fs.readFileSync(pathOut);
-		expect(myOut).to.deep.equal(bufferToArray(fileOut));
+		expect(myOut).toEqual(bufferToArray(fileOut));
 
 		// Check list
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
-		expect(filterList(myLst)).to.deep.equal(filterList(fileLst));
+		expect(filterList(myLst)).toEqual(filterList(fileLst));
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
-		expect(mySym).to.equal(fileSym);
+		expect(mySym).toEqual(fileSym);
 	});
 
-	it("fails gracefuly (simple)", function() {
+	test("fails gracefuly (simple)", function() {
 		const src = " a";
 
 		// Compile
 		const result = dasm(src);
 
-		expect(result.success).to.equal(false);
-		expect(result.list.length).to.equal(1);
-		expect(result.list[0].errorMessage).to.exist;
+		expect(result.success).toEqual(false);
+		expect(result.list.length).toEqual(1);
+		expect(result.list[0].errorMessage).toBeDefined();
 	});
 
-	it("fails gracefuly (aborted)", function() {
+	test("fails gracefuly (aborted)", function() {
 		const src = " a = 10\n processor";
 
 		// Compile
 		const result = dasm(src);
 
-		expect(result.success).to.equal(false);
-		expect(result.list.length).to.equal(2);
-		expect(result.list[0].errorMessage).to.exist;
-		expect(result.list[1].errorMessage).to.exist;
+		expect(result.success).toEqual(false);
+		expect(result.list.length).toEqual(2);
+		expect(result.list[0].errorMessage).toBeDefined();
+		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	it("fails gracefuly (missing file)", function() {
+	test("fails gracefuly (missing file)", function() {
 		const src = " include doesntexist\n include somethingelse";
 
 		// Compile
 		const result = dasm(src);
 
-		expect(result.success).to.equal(true); // It will still compile
-		expect(result.list.length).to.equal(2);
-		expect(result.list[0].errorMessage).to.exist;
-		expect(result.list[1].errorMessage).to.exist;
+		expect(result.success).toEqual(true); // It will still compile
+		expect(result.list.length).toEqual(2);
+		expect(result.list[0].errorMessage).toBeDefined();
+		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	it("fails gracefuly (missing file), doesn't mismatch error location", function() {
+	test("fails gracefuly (missing file), doesn't mismatch error location", function() {
 		const src = " include doesntexist\n include somethingelse";
 
 		// Compile
 		const result = dasm(" ; vcs.h\n include vcs.h");
 
-		expect(result.success).to.equal(true); // It will still compile
-		expect(result.list.length).to.equal(2);
-		expect(result.list[0].errorMessage).to.not.exist;
-		expect(result.list[1].errorMessage).to.exist;
+		expect(result.success).toEqual(true); // It will still compile
+		expect(result.list.length).toEqual(2);
+		expect(result.list[0].errorMessage).toBeUndefined();
+		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	it("fails gracefuly (missing symbol)", function() {
+	test("fails gracefuly (missing symbol)", function() {
 		const src = " processor 6502\n lda NOTHING\n lda NOTHING\n";
 
 		// Compile
 		const result = dasm(src);
 
-		expect(result.success).to.equal(true); // It will still compile, value will be 0
-		expect(result.list.length).to.equal(3);
-		expect(result.list[1].errorMessage).to.exist;
-		expect(result.list[2].errorMessage).to.exist;
+		expect(result.success).toEqual(true); // It will still compile, value will be 0
+		expect(result.list.length).toEqual(3);
+		expect(result.list[1].errorMessage).toBeDefined();
+		expect(result.list[2].errorMessage).toBeDefined();
 	});
 });
