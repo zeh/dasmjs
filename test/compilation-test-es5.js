@@ -41,6 +41,7 @@ describe("dasm (ES5)", function() {
 
 		// Compile
 		var result = dasm(src, { format: 3 });
+		expect(result.output).toMatchSnapshot();
 
 		// Check ROM
 		var myOut = result.data;
@@ -53,10 +54,12 @@ describe("dasm (ES5)", function() {
 		var myLst = result.listRaw.split("\n");
 		var fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
 		expect(filterList(myLst)).toEqual(filterList(fileLst));
+		expect(result.list).toMatchSnapshot();
 
 		// Check symbols
 		var mySym = result.symbolsRaw;
 		var fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).toEqual(fileSym);
+		expect(result.symbols).toMatchSnapshot();
 	});
 });

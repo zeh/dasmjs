@@ -38,6 +38,7 @@ describe("dasm (ES6)", () => {
 
 		// Compile
 		const result = dasm(src, { format: 3 });
+		expect(result.output).toMatchSnapshot();
 
 		// Check ROM
 		const myOut = result.data;
@@ -50,14 +51,16 @@ describe("dasm (ES6)", () => {
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
 		expect(filterList(myLst)).toEqual(filterList(fileLst));
+		expect(result.list).toMatchSnapshot();
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).toEqual(fileSym);
+		expect(result.symbols).toMatchSnapshot();
 	});
 
-	test("compiles complex code (combat)", function() {
+	test("compiles complex code (combat)", () => {
 		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
 		const pathOut = path.join(__dirname, "/roms/dicombat.out");
 		const pathSym = path.join(__dirname, "/roms/dicombat.sym");
@@ -69,6 +72,7 @@ describe("dasm (ES6)", () => {
 
 		// Compile
 		const result = dasm(src, { format: 3, machine: "atari2600" });
+		expect(result.output).toMatchSnapshot();
 
 		// Check ROM
 		const myOut = result.data;
@@ -81,14 +85,16 @@ describe("dasm (ES6)", () => {
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
 		expect(filterList(myLst)).toEqual(filterList(fileLst));
+		expect(result.list).toMatchSnapshot();
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).toEqual(fileSym);
+		expect(result.symbols).toMatchSnapshot();
 	});
 
-	test("compiles complex code with includes (combat)", function() {
+	test("compiles complex code with includes (combat)", () => {
 		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
 		const pathOut = path.join(__dirname, "/roms/dicombat.out");
 		const pathSym = path.join(__dirname, "/roms/dicombat.sym");
@@ -101,6 +107,7 @@ describe("dasm (ES6)", () => {
 
 		// Compile
 		const result = dasm(src, { format: 3, includes: { "vcs.h": vcsh }});
+		expect(result.output).toMatchSnapshot();
 
 		// Check ROM
 		const myOut = result.data;
@@ -113,14 +120,16 @@ describe("dasm (ES6)", () => {
 		const myLst = result.listRaw.split("\n");
 		const fileLst = fs.readFileSync(pathLst, { encoding: "utf8" }).split("\n");
 		expect(filterList(myLst)).toEqual(filterList(fileLst));
+		expect(result.list).toMatchSnapshot();
 
 		// Check symbols
 		const mySym = result.symbolsRaw;
 		const fileSym = fs.readFileSync(pathSym, { encoding: "utf8" });
 		expect(mySym).toEqual(fileSym);
+		expect(result.symbols).toMatchSnapshot();
 	});
 
-	test("fails gracefuly (simple)", function() {
+	test("fails gracefuly (simple)", () => {
 		const src = " a";
 
 		// Compile
@@ -131,7 +140,7 @@ describe("dasm (ES6)", () => {
 		expect(result.list[0].errorMessage).toBeDefined();
 	});
 
-	test("fails gracefuly (aborted)", function() {
+	test("fails gracefuly (aborted)", () => {
 		const src = " a = 10\n processor";
 
 		// Compile
@@ -143,7 +152,7 @@ describe("dasm (ES6)", () => {
 		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	test("fails gracefuly (missing file)", function() {
+	test("fails gracefuly (missing file)", () => {
 		const src = " include doesntexist\n include somethingelse";
 
 		// Compile
@@ -155,7 +164,7 @@ describe("dasm (ES6)", () => {
 		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	test("fails gracefuly (missing file), doesn't mismatch error location", function() {
+	test("fails gracefuly (missing file), doesn't mismatch error location", () => {
 		const src = " include doesntexist\n include somethingelse";
 
 		// Compile
@@ -167,7 +176,7 @@ describe("dasm (ES6)", () => {
 		expect(result.list[1].errorMessage).toBeDefined();
 	});
 
-	test("fails gracefuly (missing symbol)", function() {
+	test("fails gracefuly (missing symbol)", () => {
 		const src = " processor 6502\n lda NOTHING\n lda NOTHING\n";
 
 		// Compile
