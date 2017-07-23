@@ -142,9 +142,10 @@ TypeScript definitions are included with this distribution, so TypeScript projec
 
 ## Todo
 
-* More tests: all options
 * Run as a worker?
 * Command-line package? (`dasm-cli`)
+  * Allow direct FS use?
+  * Build file dependencies by itself?
 
 Contributions are welcome.
 
