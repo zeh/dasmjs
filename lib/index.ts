@@ -462,8 +462,17 @@ export default function(src:string, options:IOptions = {}) {
 	// Include files as needed
 	if (options.includes) {
 		for (let fileName in options.includes) {
-			Module.FS.writeFile(fileName, options.includes[fileName]);
+			try {
+				const folders = fileName.split("/");
+				for (let i = 0; i < folders.length - 1; i++) {
+					Module.FS.mkdir(folders.slice(0, i + 1).join("/"));
+				}
+				Module.FS.writeFile(fileName, options.includes[fileName]);
+			} catch (e) {
+				console.error("Error writing file " + fileName, e);
+			}
 		}
+		// showDirectory();
 	}
 
 	// Finally, call it
