@@ -2,6 +2,8 @@
  * Resolve all file includes in the source
  */
 
+import * as path from "path";
+
 const INCLUDE_REGEXP = /[ \t]\binclude[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
 const INCDIR_REGEXP = /[ \t]\bincdir[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
 const INCBIN_REGEXP = /[ \t]\bincbin[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
@@ -14,41 +16,60 @@ interface ISearchResult {
 	value: string;
 };
 
-export default function(entrySource:string, getFile:(entryRelativeUri: string, isBinary: boolean) => string|undefined):IIncludeInfo[] {
+export type IGefFileFunc = (entryRelativeUri: string, isBinary:boolean) => string|Uint8Array|undefined;
+
+export default function resolveIncludes(entrySource:string, getFile?:IGefFileFunc, baseDir:string = ""):IIncludeInfo[] {
 	// All the base folders a file can have for included files
 	const defaultDir = { line: -1, column: -1, value: "" };
-	const incDirs = [ defaultDir, ...searchInSource(entrySource, INCDIR_REGEXP)];
+	const includeDirs = [ defaultDir, ...searchInSource(entrySource, INCDIR_REGEXP)].map((includeDir) => includeDir.value);
 	const textIncludes = searchInSource(entrySource, INCLUDE_REGEXP);
 	const binaryIncludes = searchInSource(entrySource, INCBIN_REGEXP);
 
 	let includes:IIncludeInfo[] = [];
 
 	includes = includes.concat(textIncludes.map((textInclude) => {
-		let uri:string|undefined;
-		let contents:string|undefined;
+		return createIncludeFromSearchResult(textInclude, false, baseDir, includeDirs, getFile);
+	}));
 
-		for (const incDir of incDirs) {
-			uri = incDir.value + (incDir.value.length > 0 ? "/" : "") + textInclude.value;
-			contents = getFile(uri, false);
-			if (contents) {
-				break;
-			}
-		}
-
-		return {
-			line: textInclude.line,
-			column: textInclude.column,
-			entryRelativeUri: textInclude.value,
-			parentRelativeUri: uri ? uri : textInclude.value,
-			isBinary: false,
-			includes: [],
-			contents: contents ? contents : undefined,
-		};
+	includes = includes.concat(binaryIncludes.map((binaryInclude) => {
+		return createIncludeFromSearchResult(binaryInclude, true, baseDir, includeDirs, getFile);
 	}));
 
 	return includes;
 };
 
+/**
+ * Based on a search result, create an include file
+ */
+function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, baseDir:string, includeDirs:string[], getFile?:IGefFileFunc) {
+	let uri:string|undefined;
+	let contents:string|Uint8Array|undefined;
+
+	for (const includeDir of includeDirs) {
+		uri = path.join(baseDir, includeDir, include.value);
+		contents = uri && getFile ? getFile(uri, isBinary) : undefined;
+		if (contents) {
+			break;
+		}
+	}
+
+	// Also parse the include file's own includes
+	const childIncludes = getFile && contents && typeof(contents) === "string" ? resolveIncludes(contents, getFile, path.dirname(uri)) : [];
+
+	return {
+		line: include.line,
+		column: include.column,
+		entryRelativeUri: include.value,
+		parentRelativeUri: uri ? uri : include.value,
+		isBinary,
+		includes: childIncludes,
+		contents: contents ? contents : undefined,
+	};
+}
+
+/**
+ * Search for a string in a source document and returns all results (line, column, and value)
+ */
 function searchInSource(source:string, regexp:RegExp):ISearchResult[] {
 	const results:ISearchResult[] = [];
 	let match = regexp.exec(source);
@@ -67,7 +88,7 @@ function searchInSource(source:string, regexp:RegExp):ISearchResult[] {
  */
 function findMatchResult(match:RegExpExecArray|null):ISearchResult|undefined {
 	if (match) {
-		const value = match.find((value, index) => typeof(index) === "number" && index > 0 && Boolean(value));
+		const value = match.find((possibleValue, index) => typeof(index) === "number" && index > 0 && Boolean(possibleValue));
 		if (value) {
 			// Also find where position of that specific match, searching within the result itself
 			const fullMatch = match[0];

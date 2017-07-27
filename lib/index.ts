@@ -61,7 +61,7 @@ export interface IIncludeInfo {
 	parentRelativeUri: string;
 	isBinary: boolean;
 	includes: IIncludeInfo[];
-	contents?: string; // TODO: also Buffer
+	contents?: string|Uint8Array|undefined;
 }
 
 
