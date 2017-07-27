@@ -1,5 +1,10 @@
 import * as dasm from "./dasm";
 
+// Re-exports
+
+export { default as resolveIncludes } from "./resolveIncludes";
+
+
 // Configuration constants
 
 const FILENAME_IN = "file.a";
@@ -47,6 +52,16 @@ export interface ILine {
 	errorMessage?: string;
 	comment?: string;
 	command?: string;
+}
+
+export interface IIncludeInfo {
+	line: number; // 0-based
+	column: number;
+	entryRelativeUri: string;
+	parentRelativeUri: string;
+	isBinary: boolean;
+	includes: IIncludeInfo[];
+	contents?: string; // TODO: also Buffer
 }
 
 
