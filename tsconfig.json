@@ -18,6 +18,7 @@
 		"allowJs": true
 	},
 	"include": [
-		"./lib/index.ts"
+		"./lib/index.ts",
+		"./lib/global.d.ts"
 	]
 }
