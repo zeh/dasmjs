@@ -36,7 +36,7 @@ describe("dasm (ES5)", function() {
 		var pathLst = path.join(__dirname, "/roms/clock.lst");
 
 		// Read
-		var src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
+		var src = fs.readFileSync(pathSrc, { encoding: "utf8" });
 		expect(src.length).toEqual(15515);
 
 		// Compile

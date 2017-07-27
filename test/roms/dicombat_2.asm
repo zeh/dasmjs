@@ -79,7 +79,7 @@
 
 
         processor 6502
-        include ./include/vcs.h
+        include ./atari2600/vcs.h
 
 ; RAM is cleared in blocks beginning at various addresses and
 ; always ending at $A2 (though this isn't the highest address

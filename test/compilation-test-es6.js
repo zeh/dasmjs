@@ -33,7 +33,7 @@ describe("dasm (ES6)", () => {
 		const pathLst = path.join(__dirname, "/roms/clock.lst");
 
 		// Read
-		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
 		expect(src.length).toEqual(15515);
 
 		// Compile
@@ -67,7 +67,7 @@ describe("dasm (ES6)", () => {
 		const pathLst = path.join(__dirname, "/roms/dicombat.lst");
 
 		// Read
-		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
 		expect(src.length).toEqual(68825);
 
 		// Compile
@@ -102,8 +102,8 @@ describe("dasm (ES6)", () => {
 		const pathVcsh = path.join(__dirname, "/roms/atari2600/vcs.h")
 
 		// Read
-		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
-		const vcsh = fs.readFileSync(pathVcsh, { "encoding": "utf8" });
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
+		const vcsh = fs.readFileSync(pathVcsh, { encoding: "utf8" });
 
 		// Compile
 		const result = dasm(src, { format: 3, includes: { "vcs.h": vcsh }});
@@ -137,11 +137,11 @@ describe("dasm (ES6)", () => {
 		const pathVcsh = path.join(__dirname, "/roms/atari2600/vcs.h")
 
 		// Read
-		const src = fs.readFileSync(pathSrc, { "encoding": "utf8" });
-		const vcsh = fs.readFileSync(pathVcsh, { "encoding": "utf8" });
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
+		const vcsh = fs.readFileSync(pathVcsh, { encoding: "utf8" });
 
 		// Compile
-		const result = dasm(src, { format: 3, includes: { "include/vcs.h": vcsh }});
+		const result = dasm(src, { format: 3, includes: { "atari2600/vcs.h": vcsh }});
 		expect(result.output).toMatchSnapshot();
 
 		// Check ROM
