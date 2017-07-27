@@ -1,3 +1,4 @@
+export { default as resolveIncludes } from "./resolveIncludes";
 export interface IOptions {
     quick?: boolean;
     format?: "1" | "2" | "3" | 1 | 2 | 3;
@@ -28,6 +29,15 @@ export interface ILine {
     errorMessage?: string;
     comment?: string;
     command?: string;
+}
+export interface IIncludeInfo {
+    line: number;
+    column: number;
+    entryRelativeUri: string;
+    parentRelativeUri: string;
+    isBinary: boolean;
+    includes: IIncludeInfo[];
+    contents?: string | Uint8Array | undefined;
 }
 export default function (src: string, options?: IOptions): {
     data: Uint8Array;

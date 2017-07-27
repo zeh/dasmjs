@@ -4,9 +4,9 @@
 
 import * as path from "path";
 
-const INCLUDE_REGEXP = /[ \t]\binclude[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
-const INCDIR_REGEXP = /[ \t]\bincdir[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
-const INCBIN_REGEXP = /[ \t]\bincbin[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
+const INCLUDE_REGEXP = /^[^;\n]*[ \t]\binclude[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
+const INCDIR_REGEXP = /^[^;\n]*[ \t]\bincdir[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
+const INCBIN_REGEXP = /^[^;\n]*[ \t]\bincbin[ \t]+(?:"([^;"\n]+?)"|'([^;'\n]+?)'|([^ ;'"\n]+)\b)/gmi;
 
 import { IIncludeInfo } from "./index";
 
