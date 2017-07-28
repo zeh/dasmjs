@@ -54,7 +54,7 @@ function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, 
 	}
 
 	// Also parse the include file's own includes
-	const childIncludes = getFile && contents && typeof(contents) === "string" ? resolveIncludes(contents, getFile, path.dirname(uri)) : [];
+	const childIncludes = uri && getFile && typeof(contents) === "string" ? resolveIncludes(contents, getFile, path.dirname(uri)) : [];
 
 	return {
 		line: include.line,
