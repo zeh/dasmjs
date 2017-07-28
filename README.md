@@ -5,7 +5,7 @@
 
 This is an [emscripten](https://github.com/kripken/emscripten)-compiled version of the [dasm macro assembler](http://dasm-dillon.sourceforge.net/).
 
-The dasm macro assembler transforms assembly code into 6502-compatible executable binary code. Since this is a JavaScript port of dasm, it allows that compilation process from JavaScript programs; more especifically, it can be used to create Atari VCS 2600 and Fairchild Channel F ROMs from a string containing dasm-compatible assembly source code.
+The dasm macro assembler transforms assembly code into 6502-compatible executable binary code. Since this is a JavaScript port of dasm, it allows that compilation process from JavaScript programs; more especifically, it can be used to create ROMs for Atari VCS 2600 and Fairchild Channel F (and others!) from a string containing dasm-compatible assembly source code.
 
 In other words, it turns something like this:
 
@@ -43,6 +43,11 @@ Among other features, dasm sports:
 * several binary output formats available
 * expressions using [] for parenthesis
 * complex pseudo ops, repeat loops, macros, etc
+
+On top of that, this JavaScript port also offers:
+
+* More high-level parsing of symbols and labels' information (including declaration origin, type, etc)
+* A direct library interface for assembling (rather than a command-line interface)
 
 This port of dasm was created so I could have dasm compiling working in [vscode-dasm](https://github.com/zeh/vscode-dasm), my Visual Studio Code extension that aims to allow Atari development and debugging from within Visual Studio Code.
 
@@ -112,8 +117,8 @@ These are all the options currently parsed:
   * `3`: raw format. Just the data, no headers.
 * `quick`: boolean. If set to `true`, don't export any symbol and pass list as part of its returned data. Defaults to false.
 * `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
-* `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the filename, and the value, its content.
-* `machine`: target machine. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
+* `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the complete file path, and the value contains its content.
+* `machine`: target machine as a string. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
 
@@ -136,16 +141,65 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 
 Of specially note are the `list` and `symbols` objects. Those include parsed information about the source code, including line-specific error messages.
 
+### Convenience functions
+
+For convenience, this library also exposes one additional function that can be useful when processing assembly sources, `resolveIncludes`. This function parses all `include`, `incbin` and `incdir` pseudo-ops from the source, and resolves them to their respective file URIs and content. Use it like so:
+
+```JavaScript
+import { resolveIncludes } from "./../lib/index";
+
+const includes = resolveIncludes(source, getFile = undefined, baseFolder = "");
+```
+
+These are its parameters:
+
+* `source`: `string` containing assembly source code. The same source that is passed to the `dasm()` call.
+* `getFile`: a `function` that takes two parameters: `sourceEntryRelativeUri` (relative location of a file as `string`) and `isBinary` (whether it's a binary include, as `boolean`) and returns contents of that file (as either a `string` for text files, an `Uint8Array` for binary files, or `undefined` for files that were not found).
+
+  This function is optional and should be used as a convenience function to allow `resolveIncludes` to parse file contents and children includes (includes of includes). It ommitted, `resolveIncludes` returns a list of includes for the original source file without their contents (but with their best bet of a `uri`).
+
+  When using dasm inside node, a typical implementation of `getFile` that just gets file contents from the file system (`fs`) is as such:
+
+  ```JavaScript
+  function bufferToArray(b) {
+      const arr = new Uint8Array(b.length);
+      return arr.map((v, i) => b[i]);
+  }
+
+  function getFile(sourceEntryRelativeUri, isBinary) {
+      const fullUri = path(__dirname, sourceEntryRelativeUri);
+      if (fs.existsSync(fullUri)) {
+          if (isBinary) {
+              return bufferToArray(fs.readFileSync(fullUri));
+          } else {
+              return fs.readFileSync(fullUri, "utf8");
+          }
+      }
+  }
+  ```
+  It's important to check for a file existence because `getFile` might get called with uris that do not exist. This inevitable if the `incdir` pseud-op is used in the code.
+* `baseFolder`: uri `string` to be used when generating possible include file uris.
+
+This function returns an array of `IIncludeInfo`, each containing:
+
+* `line`: `number`. Line in the source file where this resource filename is.
+* `column`: `number`. Column in the source file where this resource filename is.
+* `entryRelativeUri`: `string`. The uri of this include, relative to the original entry source (and its `baseFolder`, if any).
+* `parentRelativeUri`: `string`. The uri actually used when including this file.
+* `isBinary`: `boolean`. Whether it's a binary file (used with `incbin`) or a text file (used with `include`).
+* `includes`: `IIncludeInfo[]`. Child dependencies of this file.
+* `contents`: `string|Uint8Array|undefined`. Contents of this file: a `string` if text, `Uint8Array` if binary, or `undefined` if not found or if `getFile` was not passed.
+
 ### More information
 
 TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. Non-TypeScript JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
 
-## Todo
+## Todo and ideas
 
-* Run as a worker?
+* Allow asynchronous assembly (run as a worker?)
+* Allow asynchronous `resolveIncludes`?
 * Command-line package? (`dasm-cli`)
   * Allow direct FS use?
-  * Build file dependencies by itself?
 
 Contributions are welcome.
 
