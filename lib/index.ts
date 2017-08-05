@@ -27,7 +27,7 @@ export interface IOptions {
 	format?: "1"|"2"|"3"|1|2|3;
 	parameters?: string;
 	machine?: "atari2600"|"channel-f";
-	includes?: { [key:string]:string; };
+	includes?: { [key:string]:string | Uint8Array; } | IIncludeInfo[];
 }
 
 export interface ISymbol {
@@ -425,6 +425,25 @@ function fileExists(FS:any, path:string):boolean {
 	return true;
 }
 
+function createFile(FS:any, path:string, contents:any, isBinary:boolean = false) {
+	try {
+		const folders = path.split("/");
+		for (let i = 0; i < folders.length - 1; i++) {
+			FS.mkdir(folders.slice(0, i + 1).join("/"));
+		}
+		FS.writeFile(path, contents, { encoding: isBinary ? "binary" : "utf8" });
+	} catch (e) {
+		console.error("Error writing file " + path, e);
+	}
+}
+
+function createIncludeFiles(includes:IIncludeInfo[]) {
+	for (const include of includes) {
+		createFile(Module.FS, include.entryRelativeUri, include.contents, include.isBinary);
+		createIncludeFiles(include.includes);
+	}
+}
+
 /*
 // For testing purposes
 function showDirectory() {
@@ -486,15 +505,14 @@ export default function(src:string, options:IOptions = {}): IDasmResult {
 
 	// Include files as needed
 	if (options.includes) {
-		for (let fileName in options.includes) {
-			try {
-				const folders = fileName.split("/");
-				for (let i = 0; i < folders.length - 1; i++) {
-					Module.FS.mkdir(folders.slice(0, i + 1).join("/"));
-				}
-				Module.FS.writeFile(fileName, options.includes[fileName]);
-			} catch (e) {
-				console.error("Error writing file " + fileName, e);
+		if (Array.isArray(options.includes)) {
+			// Arrays of IInclude
+			createIncludeFiles(options.includes);
+		} else {
+			// Object with key uri:value contents
+			for (let fileName in options.includes) {
+				const content = options.includes[fileName];
+				createFile(Module.FS, fileName, content, typeof(content) !== "string");
 			}
 		}
 		// showDirectory();
