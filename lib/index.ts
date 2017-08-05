@@ -64,6 +64,16 @@ export interface IIncludeInfo {
 	contents?: string|Uint8Array|undefined;
 }
 
+export interface IDasmResult {
+	data: Uint8Array;
+	output: string[];
+	list?: ILine[];
+	listRaw?: string;
+	symbols?: ISymbol[];
+	symbolsRaw?: string;
+	exitStatus: number;
+	success: boolean;
+}
 
 // Methods and functions
 
@@ -439,7 +449,7 @@ function logDir(node, level) {
 
 // Final export
 
-export default function(src:string, options:IOptions = {}) {
+export default function(src:string, options:IOptions = {}): IDasmResult {
 	// Prepare vars
 	log.length = 0;
 	didCompile = true;
