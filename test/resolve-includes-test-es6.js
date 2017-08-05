@@ -45,6 +45,24 @@ describe("resolve-includes", () => {
 		expect(includes).toMatchSnapshot();
 	});
 
+	test("assembles with resolvedIncludes only", () => {
+		const pathSrc = path.join(__dirname, "/resolve-includes/entry.asm");
+
+		// Read
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
+
+		// Resolve
+		const includes = resolveIncludes(src, resolveIncludesFromFileSystem("resolve-includes"));
+
+		// Compile
+		const result = dasm(src, { format: 3, includes: includes });
+		expect(result.output).toMatchSnapshot();
+
+		// Check ROM
+		const myOut = result.data;
+		expect(myOut.length).toEqual(4096);
+	});
+
 	test("resolves simple code includes (clock)", () => {
 		const pathSrc = path.join(__dirname, "/roms/clock.asm");
 

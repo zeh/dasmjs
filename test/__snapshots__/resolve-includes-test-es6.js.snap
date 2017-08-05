@@ -1,5 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`resolve-includes assembles with resolvedIncludes only 1`] = `
+Array [
+  " ",
+  "Complete.",
+]
+`;
+
 exports[`resolve-includes deep test resolves all 1`] = `
 Array [
   Object {
