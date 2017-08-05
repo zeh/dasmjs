@@ -117,7 +117,7 @@ These are all the options currently parsed:
   * `3`: raw format. Just the data, no headers.
 * `quick`: boolean. If set to `true`, don't export any symbol and pass list as part of its returned data. Defaults to false.
 * `parameters`: string. List of switches passed to dasm as if it was being called from the command line.
-* `include`: key-value object. This is a list of files that should be made available for the source code to `include`. The key contains the complete file path, and the value contains its content.
+* `include`: key-value object, or `IIncludeInfo[]`. This is a list of files that should be made available for the source code to `include`. If an objct, the key contains the complete file path, and the value contains its content, either as a string or an `Uint8Array` for binary files. It can also be an array of include file info, as returned by `resolveIncludes()` (more on that below).
 * `machine`: target machine as a string. Similarly to dasm's `-I` switch, this picks a list of (embedded) files to make available to the `include` command.
   * `"atari2600"`: includes dasm's own `atari2600/macro.h` and `atari2600/vcs.h` files.
   * `"channel-f"`: includes dasm's own `channel-f/macro.h` and `channel-f/ves.h` files.
@@ -132,7 +132,7 @@ The object returned by the `dasm` function has more than just a binary ROM. This
 
 * `data`: `Uint8Array`. The exported ROM, as a list of integers.
 * `output`: `string[]`. All data written by dasm to `stdout`.
-* `list`: `IList[]`. A list of all lines available in the source code, and their parsed info (address, bytecode, comments, command, etc).
+* `list`: `ILine[]`. A list of all lines available in the source code, and their parsed info (address, bytecode, comments, command, etc).
 * `listRaw`: `string`. The raw output of the list file (equivalent to the `-L` switch).
 * `symbols`: `ISymbol[]`. A parsed list of all symbols (labels and constants) defined by the source code.
 * `symbolsRaw`: `string`. The raw output of the symbols file (equivalent to the `-s` switch).
@@ -156,7 +156,7 @@ These are its parameters:
 * `source`: `string` containing assembly source code. The same source that is passed to the `dasm()` call.
 * `getFile`: a `function` that takes two parameters: `sourceEntryRelativeUri` (relative location of a file as `string`) and `isBinary` (whether it's a binary include, as `boolean`) and returns contents of that file (as either a `string` for text files, an `Uint8Array` for binary files, or `undefined` for files that were not found).
 
-  This function is optional and should be used as a convenience function to allow `resolveIncludes` to parse file contents and children includes (includes of includes). It ommitted, `resolveIncludes` returns a list of includes for the original source file without their contents (but with their best bet of a `uri`).
+  This function is optional and should be used as a convenience function to allow `resolveIncludes` to parse file contents and children includes (includes of includes). It ommitted, `resolveIncludes` returns a list of includes for the original source file without their contents (but with their best guess at the file's actual `uri`).
 
   When using dasm inside node, a typical implementation of `getFile` that just gets file contents from the file system (`fs`) is as such:
 
@@ -177,7 +177,7 @@ These are its parameters:
       }
   }
   ```
-  It's important to check for a file existence because `getFile` might get called with uris that do not exist. This inevitable if the `incdir` pseud-op is used in the code.
+  It's important to check for a file existence because `getFile` might get called with uris that do not exist. This inevitable if the `incdir` pseudo-op is used in the code.
 * `baseFolder`: uri `string` to be used when generating possible include file uris.
 
 This function returns an array of `IIncludeInfo`, each containing:
@@ -193,6 +193,22 @@ This function returns an array of `IIncludeInfo`, each containing:
 ### More information
 
 TypeScript definitions are included with this distribution, so TypeScript projects can use the module and get type checking and completion for all `dasm` calls. Non-TypeScript JavaScript developers using Visual Studio Code will also benefit from auto-completion without any change thanks to VSC's [Automatic Type Acquisition](http://code.visualstudio.com/updates/v1_7#_better-javascript-intellisense).
+
+TypeScript projects also have the benefit of being able to import the interfaces themselves, if needed:
+
+```typescript
+// dasm() options
+import { IOptions } from "dasm";
+
+// dasm() return object
+import { IDasmResult } from "dasm";
+
+// Other interfaces used by the IDasmResult object
+import { ISymbol, ILine } from "dasm";
+
+// The include info returned by resolveIncludes(), or passed to dasm() for inclusion
+import { IIncludeInfo } from "dasm";
+```
 
 ## Todo and ideas
 
