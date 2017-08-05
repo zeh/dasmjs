@@ -5,8 +5,8 @@ export interface IOptions {
     parameters?: string;
     machine?: "atari2600" | "channel-f";
     includes?: {
-        [key: string]: string;
-    };
+        [key: string]: string | Uint8Array;
+    } | IIncludeInfo[];
 }
 export interface ISymbol {
     name: string;
@@ -39,13 +39,14 @@ export interface IIncludeInfo {
     includes: IIncludeInfo[];
     contents?: string | Uint8Array | undefined;
 }
-export default function (src: string, options?: IOptions): {
+export interface IDasmResult {
     data: Uint8Array;
     output: string[];
-    list: ILine[] | undefined;
-    listRaw: string | undefined;
-    symbols: ISymbol[] | undefined;
-    symbolsRaw: string | undefined;
+    list?: ILine[];
+    listRaw?: string;
+    symbols?: ISymbol[];
+    symbolsRaw?: string;
     exitStatus: number;
     success: boolean;
-};
+}
+export default function (src: string, options?: IOptions): IDasmResult;
