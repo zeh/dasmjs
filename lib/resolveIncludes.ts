@@ -18,7 +18,7 @@ interface ISearchResult {
 
 export type IGefFileFunc = (entryRelativeUri: string, isBinary:boolean) => string|Uint8Array|undefined;
 
-export default function resolveIncludes(entrySource:string, getFile?:IGefFileFunc, baseDir:string = ""):IIncludeInfo[] {
+export default function resolveIncludes(entrySource:string, getFile?:IGefFileFunc, baseDir:string = "", recursive:boolean = true):IIncludeInfo[] {
 	// All the base folders a file can have for included files
 	const defaultDir = { line: -1, column: -1, value: "" };
 	const includeDirs = [ defaultDir, ...searchInSource(entrySource, INCDIR_REGEXP)].map((includeDir) => includeDir.value);
@@ -28,11 +28,11 @@ export default function resolveIncludes(entrySource:string, getFile?:IGefFileFun
 	let includes:IIncludeInfo[] = [];
 
 	includes = includes.concat(textIncludes.map((textInclude) => {
-		return createIncludeFromSearchResult(textInclude, false, baseDir, includeDirs, getFile);
+		return createIncludeFromSearchResult(textInclude, false, baseDir, recursive, includeDirs, getFile);
 	}));
 
 	includes = includes.concat(binaryIncludes.map((binaryInclude) => {
-		return createIncludeFromSearchResult(binaryInclude, true, baseDir, includeDirs, getFile);
+		return createIncludeFromSearchResult(binaryInclude, true, baseDir, recursive, includeDirs, getFile);
 	}));
 
 	return includes;
@@ -41,7 +41,7 @@ export default function resolveIncludes(entrySource:string, getFile?:IGefFileFun
 /**
  * Based on a search result, create an include file
  */
-function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, baseDir:string, includeDirs:string[], getFile?:IGefFileFunc) {
+function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, baseDir:string, recursive:boolean, includeDirs:string[], getFile?:IGefFileFunc) {
 	let uri:string|undefined;
 	let contents:string|Uint8Array|undefined;
 
@@ -54,7 +54,10 @@ function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, 
 	}
 
 	// Also parse the include file's own includes
-	const childIncludes = uri && getFile && typeof(contents) === "string" ? resolveIncludes(contents, getFile, path.dirname(uri)) : [];
+	let childIncludes:IIncludeInfo[] = [];
+	if (recursive && uri && getFile && typeof(contents) === "string") {
+		childIncludes = childIncludes.concat(resolveIncludes(contents, getFile, path.dirname(uri), recursive));
+	}
 
 	return {
 		line: include.line,
