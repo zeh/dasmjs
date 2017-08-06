@@ -45,6 +45,25 @@ describe("resolve-includes", () => {
 		expect(includes).toMatchSnapshot();
 	});
 
+	test("deep test resolves all, non-recursive", () => {
+		const pathSrc = path.join(__dirname, "/resolve-includes/entry.asm");
+
+		// Read
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
+
+		// Resolve
+		const includes = resolveIncludes(src, resolveIncludesFromFileSystem("resolve-includes"), undefined, false);
+
+		// Count number of entry-level includes
+		expect(includes.length).toBe(3);
+
+		// Count number of included files
+		const includeCounter = (acc, include) => include.includes.reduce(includeCounter, acc + 1);
+		expect(includes.reduce(includeCounter, 0)).toBe(3);
+
+		expect(includes).toMatchSnapshot();
+	});
+
 	test("assembles with resolvedIncludes only", () => {
 		const pathSrc = path.join(__dirname, "/resolve-includes/entry.asm");
 
