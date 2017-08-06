@@ -46,7 +46,7 @@ function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, 
 	let contents:string|Uint8Array|undefined;
 
 	for (const includeDir of includeDirs) {
-		uri = path.join(baseDir, includeDir, include.value);
+		uri = path.posix.join(baseDir, includeDir, include.value);
 		contents = uri && getFile ? getFile(uri, isBinary) : undefined;
 		if (contents) {
 			break;
@@ -56,7 +56,7 @@ function createIncludeFromSearchResult(include:ISearchResult, isBinary:boolean, 
 	// Also parse the include file's own includes
 	let childIncludes:IIncludeInfo[] = [];
 	if (recursive && uri && getFile && typeof(contents) === "string") {
-		childIncludes = childIncludes.concat(resolveIncludes(contents, getFile, path.dirname(uri), recursive));
+		childIncludes = childIncludes.concat(resolveIncludes(contents, getFile, path.posix.dirname(uri), recursive));
 	}
 
 	return {
