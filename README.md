@@ -143,7 +143,7 @@ Of specially note are the `list` and `symbols` objects. Those include parsed inf
 
 ### Convenience functions
 
-For convenience, this library also exposes one additional function that can be useful when processing assembly sources, `resolveIncludes`. This function parses all `include`, `incbin` and `incdir` pseudo-ops from the source, and resolves them to their respective file URIs and content. Use it like so:
+For convenience, this library also exposes one additional function that can be useful when processing assembly sources, `resolveIncludes`. This function parses all `include`, `incbin` and `incdir` pseudo-ops from the source, and resolves them to their respective file URIs (in POSIX format) and content. Use it like so:
 
 ```JavaScript
 import { resolveIncludes } from "./../lib/index";
@@ -179,6 +179,7 @@ These are its parameters:
   ```
   It's important to check for a file existence because `getFile` might get called with uris that do not exist. This inevitable if the `incdir` pseudo-op is used in the code.
 * `baseFolder`: uri `string` to be used when generating possible include file uris.
+* `recursive`: `boolean` on whether the resolution should be recursive or not. The default is `true`, in which case every included file will also be parsed for `includes` of its own.
 
 This function returns an array of `IIncludeInfo`, each containing:
 
