@@ -92,11 +92,21 @@ describe("resolve-includes", () => {
 		expect(includes).toMatchSnapshot();
 	});
 
+	test("resolves simple code includes (clock) with base dir", () => {
+		const pathSrc = path.join(__dirname, "/roms/clock.asm");
+
+		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
+		const includes = resolveIncludes(src, resolveIncludesFromFileSystem("roms"));
+
+		expect(includes.length).toEqual(0);
+		expect(includes).toMatchSnapshot();
+	});
+
 	test("resolves complex code includes (combat) with missing vcs.h", () => {
 		const pathSrc = path.join(__dirname, "/roms/dicombat.asm");
 
 		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
-		const includes = resolveIncludes(src, resolveIncludesFromFileSystem("roms"));
+		const includes = resolveIncludes(src, resolveIncludesFromFileSystem("roms"), "somedir");
 
 		expect(includes.length).toEqual(1);
 		expect(includes).toMatchSnapshot();

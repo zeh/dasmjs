@@ -5,7 +5,7 @@
 ;
 ; Original disassembly by Harry Dodgson
 ; Commented further by Nick Bensema (1997)
-; Major overhaul by Roger Williams (2002) 
+; Major overhaul by Roger Williams (2002)
 ;
 ; My intent in overhauling this classic disassembly is to finish it
 ; so that the purpose of every instruction, memory location, and
@@ -93,7 +93,7 @@ BCDvar  =     $81 ; Game Variation in BCD
 ;
 ;\\\///
 ;
-; $82 thru $85 contain flags built from GAMVAR for quick testing via BIT. 
+; $82 thru $85 contain flags built from GAMVAR for quick testing via BIT.
 ;
 PF_PONG =     $82 ; bit 7 DIS-able playfield flag
 ;                 ; bit 6 Pong missiles (bounce off playfield)
@@ -202,7 +202,7 @@ StkTop  =     $FF ; Top of stack (which IS used, at least 8 bytes)
 ; So much for the RAM.  Here's the ROM:
 
 	org $F000
-	
+
 START	SEI                     ; Disable interrupts
 	CLD                     ; Clear decimal bit
 	LDX  #StkTop
@@ -241,7 +241,7 @@ VCNTRL  INC  CLOCK            ; Master frame count timer
 	LDA  #2	              ; Get this ready...
 	STA  WSYNC            ; for start of next line...
 	STA  VBLANK           ; Start vertical blank.
-	STA  WSYNC 
+	STA  WSYNC
 	STA  WSYNC            ; and do three lines
 	STA  WSYNC
 	STA  VSYNC            ; Now start vertical sync
@@ -252,7 +252,7 @@ VCNTRL  INC  CLOCK            ; Master frame count timer
 	STA  VSYNC            ; End of vertical sync pulse
 	LDA  #43              ; And set VBLANK timer
 	STA  TIM64T           ; with 64 clock interval.
-	RTS  
+	RTS
 ;
 ; ------------------------------------------------------------
 ;
@@ -270,13 +270,13 @@ VOUT_VB	LDA  INTIM
 	STA  WSYNC
 	STA  CXCLR              ; Clear collision latches
 	STA  VBLANK             ; End vertical blank
-	TSX  
+	TSX
 	STX  TMPSTK             ; Save stack pointer
 	LDA  #$02
 	STA  CTRLPF             ; Double, instead of reflect.
 	LDX  KLskip
 Vskip1  STA  WSYNC              ; Skip a few scanlines...
-	DEX  
+	DEX
 	BNE  Vskip1
 	LDA  KLskip
 	CMP  #$0E               ; "No Score" value of KLskip
@@ -306,10 +306,10 @@ VSCOR	STA  WSYNC              ; Start with a fresh scanline.
 	; left score, as the electron beam moves towards
 	; the right score's position in this scanline.
 	;
-	LDY  SCROFF+2       
+	LDY  SCROFF+2
 	LDA  NUMBERS,Y          ; Get left digit.
-	AND  #$F0       
-	STA  NUMG0     
+	AND  #$F0
+	STA  NUMG0
 	LDY  SCROFF
 	LDA  NUMBERS,Y          ; Get right digit.
 	AND  #$0F
@@ -354,7 +354,7 @@ VSCOR	STA  WSYNC              ; Start with a fresh scanline.
 	;
 Vmain	LDA  #$00               ; Inner Display Loop
 	STA  PF1                ; Clear the score.
-	STA  WSYNC              
+	STA  WSYNC
 	LDA  #$05
 	STA  CTRLPF             ; Reflecting playfield.
 	LDA  Color0
@@ -364,13 +364,13 @@ Vmain	LDA  #$00               ; Inner Display Loop
 Vfield	LDX  #$1E               ; Very Sneaky -
 	TXS                     ; Set stack to missile registers
 	SEC
-	;  
+	;
 	; This yields which line of player 0 to draw.
 	;
 	LDA  TankY0
 	SBC  ScanLine           ; A=TankY0-ScanLine
 	AND  #$FE               ; Force an even number
-	TAX                     ; Only sixteen bytes of 
+	TAX                     ; Only sixteen bytes of
 	AND  #$F0               ; sprite memory, so...
 	BEQ  VdoTank            ; If not valid,
 	LDA  #$00               ; blank the tank.
@@ -391,7 +391,7 @@ VnoTank STA  WSYNC              ; ----END OF ONE LINE----
 	AND  #$FE
 	PHP                     ; This turns the missle 1 on/off
 	LDA  MissileY0
-	EOR  ScanLine  
+	EOR  ScanLine
 	AND  #$FE
 	PHP                     ; This turns the missle 0 on/off
 	;
@@ -403,8 +403,8 @@ VnoTank STA  WSYNC              ; ----END OF ONE LINE----
 	EOR  #$F8               ; reverse direction so we can mirror.
 VvRefl	CMP  #$20
 	BCC  VfDone             ; Branch if at bottom.
-	LSR   
-	LSR   
+	LSR
+	LSR
 	LSR                     ; Divide by eight,
 	TAY                     ; and stow it in the Y-register.
 	;
@@ -414,7 +414,7 @@ VvRefl	CMP  #$20
 	; This yields which line of Tank 1 to draw.
 	;
 VfDone	LDA  TankY1             ; TankY1 is other player's position.
-	SEC  
+	SEC
 	SBC  ScanLine           ; A=TankY1 - ScanLine
 	INC  ScanLine           ; Increment the loop.
 	NOP
@@ -449,7 +449,7 @@ VnoPF	INC  ScanLine           ; One more up in the loop.
 	STA  PF0
 	STA  PF1
 	STA  PF2
-	RTS  
+	RTS
 
 ; ------------------------------------------------------------
 ;
@@ -468,8 +468,8 @@ GSGRCK	;
 	LDA  #$0F
 	STA  SHOWSCR            ; Show right score.
 	LDA  #$FF               ; Set all bits
-	STA  GameOn             ; in GameOn.  
-	LDA  #$80   
+	STA  GameOn             ; in GameOn.
+	LDA  #$80
 	STA  GameTimer          ; and bit 7 of GameTimer (this is not too
 	                        ; significant, as GameTimer rollover is
 	                        ; only checked if GameOn<>$00)
@@ -544,7 +544,7 @@ SelGO	LDA  BCDvar		; Since we have incremented BINvar, we
 	;
 	; Branches here when game is started, too.
 	;
-ResetField 
+ResetField
 	JSR  InitPF
 	;
 	; Assuming plane game for now, we set the right player
@@ -567,7 +567,7 @@ ResetField
 	STA  HMP1
 	STA  WSYNC
 	STA  HMOVE
-CS_RTS	RTS  
+CS_RTS	RTS
 
 
 ; ------------------------------------------------------------
@@ -600,12 +600,12 @@ SCROT0	LDA  SCORE,X
 	STA  TEMP
 	LSR                     ; *2
 	LSR                     ; *1
-	CLC  
+	CLC
 	ADC  TEMP               ; + (*4) = original * 5
 	STA  SCROFF+2,X
-	DEX  
+	DEX
 	BPL  SCROT0             ;Decrement & repeat once for P0
-	RTS  
+	RTS
 
 ; ------------------------------------------------------------
 ;
@@ -632,7 +632,7 @@ STPnext LDA  FwdTimer,X         ; back to run this code block again
                                 ; ($F0 to $FF and roll)
 	                        ; This bit will index MVadjA or MVadjB
 	STX  TEMP1              ; Player # --> TEMP1
-	CLC  
+	CLC
 	ADC  TEMP1
 	TAY                     ; Player # + FwdTimer half done*2 --> Y
 	LDA  MVadjA,Y           ; And retrieve MVadjA or MVadjB via Y
@@ -648,15 +648,15 @@ STP7set ROL                     ; carry=bit 7, now ROL; net effect is to
 	LDA  MPace,X            ; Tweak velocity by changing XoffBase
 	AND  #$01               ; but only every other time we get here
 	ASL
-	ASL   
-	ASL   
-	ASL   
+	ASL
+	ASL
+	ASL
 	STA  XoffBase           ; XoffBase=$0 or $10 via (MPace & 1) << 4
 	JSR  STPM               ; Note this is where we INC MPace
 STPnoV
 	DEX                     ; Move to _previous_ player.
 	BEQ  STPnext            ; Stop if about to do player -1.  :)
-	RTS  
+	RTS
 ;
 ; This routine will move both tanks and missiles.
 ; Special cases are made for missiles, which are
@@ -668,21 +668,21 @@ STPnoV
 STPM    INC  MPace,X
 	LDA  DIRECTN,X
 	AND  #$0F
-	CLC  
+	CLC
 	ADC  XoffBase         ; Pick table offset by game condition
-	TAY  
+	TAY
 	LDA  Xoffsets,Y	      ; X-offset by orientation.
 	STA  XOFFS            ; Store the default HMPV code.
 	BIT  PF_PONG
 	BVS  STPgo            ; Branch if (fast) Pong missiles
 	LDA  DIRECTN,X
-	SEC  
+	SEC
 	SBC  #$02             ; If motion is near X or Y axis,
 	AND  #$03
 	BNE  STPgo            ; don't apply delay
 	LDA  MPace,X          ; but if very diagonal, slow a bit by
 	AND  #$03             ; moving only 3 of every 4 frames
-	BNE  STPgo            ; 
+	BNE  STPgo            ;
 	LDA  #$08             ; HMPV for no motion X or Y
 	STA  XOFFS            ; no motion this frame
 STPgo   LDA  XOFFS
@@ -694,10 +694,10 @@ STPgo   LDA  XOFFS
 	;
 PhMove  STA  HMP0,X             ; Hi nibble sets HMPx horizontal motion
 	AND  #$0F               ; Lo nibble...
-	SEC  
+	SEC
 	SBC  #$08               ; less 8 for 2's complement 4-bit...
 	STA  $D4                ; (save this offset)
-	CLC  
+	CLC
 	ADC  TankY0,X           ; add to Y-coordinate
 	BIT  GAMVAR
 	BMI  PhNoTank           ; Branch if a plane game.
@@ -718,7 +718,7 @@ PhNoWrap
 	CPX  #$02
 	BCS  PhnoVD             ; Skip if moving a missile.
 	STA  VDELP0,X           ; Vertical Delay Player X...
-PhnoVD	RTS  
+PhnoVD	RTS
 
 
 ; ------------------------------------------------------------
@@ -726,19 +726,19 @@ PhnoVD	RTS
 ; ROTate player sprites
 ;
 ; This subroutine sets up the sprite data for each player by copying
-; them into sixteen bytes of RAM. 
-; 
-; The X-register starts at $0E plus player number and goes down by two 
-; each time through the loop, until it hits zero.  This way, after calling 
-; this subroutine twice, every even-numbered byte contains the left player 
-; shape, and every odd-numbered byte contains the right player shape.  Since 
+; them into sixteen bytes of RAM.
+;
+; The X-register starts at $0E plus player number and goes down by two
+; each time through the loop, until it hits zero.  This way, after calling
+; this subroutine twice, every even-numbered byte contains the left player
+; shape, and every odd-numbered byte contains the right player shape.  Since
 ; each player is updated every two scanlines, this saves us some math.
 ;
 ; Only the first 180 degrees of rotation has been drawn into ROM.  In the
 ; case of the other 180 degrees, this subroutine renders a flipped version
 ; by doing the following:
 ;
-; 1. It sets the TIA's reflection flag for that player, taking care of 
+; 1. It sets the TIA's reflection flag for that player, taking care of
 ;    the horizontal aspect rather easily.
 ;
 ; 2. It copies the bytes into memory last-to-first instead of first-to-
@@ -751,37 +751,37 @@ ROT	LDA  #$01               ; The LO byte of CLOCK used to
 	STA  REFP0,X            ; Step 1 taken care of.
 	AND  #$0F
 	TAY                     ; Y = DIRECTN[X] & 0x0F.
-	BIT  GUIDED     
+	BIT  GUIDED
 	BPL  ROTnoGM            ; If it's a guided missile game,
 	STY  DIRECTN+2,X        ; copy player bearings to missile
 ROTnoGM TXA                     ; X ^= $0E,
 	EOR  #$0E
-	TAX 
-	TYA  
-	ASL   
-	ASL   
-	ASL   
+	TAX
+	TYA
+	ASL
+	ASL
+	ASL
 	CMP  #$3F               ; And so step 2 begins...
-	CLC  
+	CLC
 	BMI  ROTnoFlip          ; Branch if <180 deg.
 	SEC
 	EOR  #$47    ;The EOR sets bits 0-2, and clears bit 4
 	;             to subtract 180 degrees from the memory
 	;             pointer, too.
-ROTnoFlip TAY  
+ROTnoFlip TAY
 	;
 	;Put all the shapes where they ought to be.
 	;
 ROTnext	LDA  (SHAPES),Y
 	STA  HIRES,X
-	BCC  ROTinc 
+	BCC  ROTinc
 	DEY                     ; Decrement instead of increment
 	DEY                     ; plus cancel the upcoming INY.
 ROTinc	INY                     ; More of step 2.
-	DEX  
+	DEX
 	DEX                     ; X-=2.
 	BPL  ROTnext            ; Do for both, 1 then 0 then stop.
-	RTS  
+	RTS
 
 
 ; ------------------------------------------------------------
@@ -802,7 +802,7 @@ CHKSW	LDA  StirTimer          ; We must dec StirTimer by 2
 	BCC  StirRTS            ; RTS if tank has
 	                        ; just finished exploding.
 	AND  #$01               ; Stir the LOSER's tank.
-	TAX  
+	TAX
 	;One of these is the tank's bearings.
 	INC  DIRECTN,X
 	LDA  XColor0,X
@@ -815,9 +815,9 @@ NoStirRush
 	LDA  StirTimer
 	BPL  StirRTS            ; Don't start decrementing
 	                        ; volume until halfway through.
-	LSR   
+	LSR
 	LSR                     ; StirTimer scales audio volume
-	LSR                     ; 
+	LSR                     ;
 BoomSnd	STA  AUDV0,X            ; Set explosion sound to volume in A
 	LDA  #$08               ; and pitch according to player X
 	STA  AUDC0,X
@@ -854,9 +854,9 @@ NoFreezeJS
 	STA  TEMP
 	LDY  GAMSHP
 	LDA  CtrlBase,Y         ; Account for two-dimensional array
-	CLC  
+	CLC
 	ADC  TEMP
-	TAY  
+	TAY
 	LDA  CTRLTBL,Y
 	AND  #$0F               ; Get rotation from CTRLTBL.
 	STA  TEMP1              ; Stash it here
@@ -884,9 +884,9 @@ DoFwdMotion
 	INC  FwdTimer,X         ; Inc FwdTImer and if it doesn't
 	BMI  SkipFwdCtrl        ; roll over, don't acknowledge velocity
 	LDA  CTRLTBL,Y          ; changes yet
-	LSR   
-	LSR   
-	LSR   
+	LSR
+	LSR
+	LSR
 	LSR                     ; Get forward velocity from CTRLTBL
 	;
 	; This is the desired _final_ velocity of the player.  If
@@ -894,9 +894,9 @@ DoFwdMotion
 	; won't reach it until the end of the FwdTimer period.
 	;
 	BIT  DIFSWCH
-	BMI  FwdPro             ; Branch if difficulty="Pro" 
+	BMI  FwdPro             ; Branch if difficulty="Pro"
 	                        ; (reduces A and branches back to FwdNorm)
-FwdNorm	STA  Vtemp,X            ; Stash velocity in Vtemp 
+FwdNorm	STA  Vtemp,X            ; Stash velocity in Vtemp
 	ASL                     ; Multiply by two
 	TAY                     ; Stash in Y.
 	LDA  MVtable,Y          ; Indexed by velocity * 2, even
@@ -910,14 +910,14 @@ FwdNorm	STA  Vtemp,X            ; Stash velocity in Vtemp
 SkipFwdCtrl
 	JSR  ChkVM
 	LDA  SWCHA              ; Joysticks..
-	LSR   
-	LSR   
-	LSR   
+	LSR
+	LSR
+	LSR
 	LSR                     ; Keep bottom four bits (Left Player)
 	ASL  DIFSWCH            ; Use other difficulty switch.
-	DEX  
-	BEQ  NextPJS 
-	RTS  
+	DEX
+	BEQ  NextPJS
+	RTS
 	;
 FwdPro  SEC                     ; Velocity is in A
 	SBC  GAMSHP             ; subtract 0/tank, 1/biplane, 2/jet
@@ -955,7 +955,7 @@ MisKill LDA  #$00               ; Reset missile's life, killing it
 	STA  MisLife,X
 	LDA  #$FF               ; And reset its position
 ResRTS  STA  RESMP0,X           ; to player.
-	RTS  
+	RTS
 	;
 	; If game in progress, Read the trigger
 	;
@@ -998,7 +998,7 @@ MisDSkp	LDA  #$00
 	;
 Launch	LDA  #$3F
 	STA  MisLife,X          ; Init MisLife to $3F
-	SEC  
+	SEC
 	LDA  TankY0,X           ; Copy Y-position... Tank Y-position points
 	                        ; to top of sprite, but missile is launched
 	SBC  #$06               ; from its center 6 scanlines down.
@@ -1022,9 +1022,9 @@ MOTORS	LDA  AltSnd,X
 	STA  AUDC0,X
 	LDA  #$07
 	STA  AUDV0,X
-	LDA  BounceCount,X  
+	LDA  BounceCount,X
 	STA  AUDF0,X
-	RTS  
+	RTS
 	; Engine sound.
 DOMOTOR	LDY  GAMSHP
 	LDA  SNDV,Y
@@ -1032,7 +1032,7 @@ DOMOTOR	LDY  GAMSHP
 	STA  AUDV0,X            ; volume value w/$00 no-game value
 	LDA  SNDC,Y
 	STA  AUDC0,X
-	CLC  
+	CLC
 	LDA  #$00
 MOPIT0  DEY                     ; This loop sets start value for sound
 	BMI  MOPIT1             ; pitch based on GAMSHP in Y (tank,
@@ -1040,11 +1040,11 @@ MOPIT0  DEY                     ; This loop sets start value for sound
 	BPL  MOPIT0
 MOPIT1  ADC  Vtemp,X            ; Use saved velocity to adjust
 	TAY                     ; sound pitch via SNDP table
-	TXA  
-	ASL   
+	TXA
+	ASL
 	ADC  SNDP,Y
 	STA  AUDF0,X
-	RTS  
+	RTS
 
 ; ------------------------------------------------------------
 ;
@@ -1074,14 +1074,14 @@ COLDET	INC  DIRECTN,X  ; Turn both tanks 22.5 degrees.
 	; Increase player's score. A simple INC SCORE,X
 	; won't do because we're doing it in BCD.
 	;
-	SED  
+	SED
 	LDA  SCORE,X
-	CLC  
+	CLC
 	ADC  #$01
 	STA  SCORE,X
-	CLD  
-	TXA  
-	CLC  
+	CLD
+	TXA
+	CLC
 	ADC  #$FD
 	STA  StirTimer
 	;
@@ -1097,7 +1097,7 @@ COLDET	INC  DIRECTN,X  ; Turn both tanks 22.5 degrees.
 	STA  AUDV0,X          ; Turn off the victor's engine.
 	STA  MisLife          ; clear MisLife (no missile)
 	STA  $9A              ; and 9A.
-	RTS  
+	RTS
 	;
 	; We didn't just end the game, so we deal with some
 	; sound and bounce logic
@@ -1200,26 +1200,26 @@ COLTnk1	DEC  COLcount,X         ; Tank colliding
 	LDA  Vtemp,X
 	BEQ  COLPD              ; No boink if velocity=0, player done
 	BNE  COLreverse         ; else skip INC, needed for elsewhere
-	;              
+	;
 COLbonk	INC  DIRECTN,X          ; Jigger direction 22.5 for disorientation
 COLreverse
-	LDA  DIRECTN,X 
-	CLC  
+	LDA  DIRECTN,X
+	CLC
 	ADC  #$08               ; Add 180 degrees to direction
 	JSR  BumpTank           ; to bump tank back
 	;
 	; COLIS Player Done
 	;
-COLPD   DEX  
+COLPD   DEX
 	BMI  COLrts     ;Return if X<0.
 	JMP  COLnext    ;Else do the other player
-COLrts  RTS  
+COLrts  RTS
 	;
-	; Bump the tank in the direction 
+	; Bump the tank in the direction
 	; the other player's missile is moving
 	;
 RushTank
-	TXA  
+	TXA
 	EOR  #$01               ; Get OTHER player #
 	TAY                     ; in Y
 	LDA  DIRECTN+2,Y        ; OTHER player Missile's Direction
@@ -1229,8 +1229,8 @@ RushTank
 	;
 BumpTank
 	AND  #$0F
-	TAY  
-	LDA  HDGTBL,Y ;Nove 
+	TAY
+	LDA  HDGTBL,Y ;Nove
 	JSR  PhMove   ;Move object in that direction.
 	LDA  #$00
 	STA  MVadjA,X
@@ -1238,7 +1238,7 @@ BumpTank
 	STA  FwdTimer,X  ;Stop it dead in its tracks....
 	LDA  XColor0,X
 	STA  Color0,X
-	RTS  
+	RTS
 
 ; ------------------------------------------------------------
 ;
@@ -1253,8 +1253,8 @@ InitPF	LDX  GAMSHP             ; 0=tank, 1=biplane, 2=jet
 	STA  SHAPES+1
 	;
 	LDA  GAMVAR             ; Now set up PF_PONG and playfield type
-	LSR   
-	LSR   
+	LSR
+	LSR
 	AND  #$03               ; bits 0,1=maze (playfield) type.
 	TAX                     ; send it to X.
 	LDA  GAMVAR
@@ -1268,9 +1268,9 @@ IF80    LDA  #$80               ; Change PF_PONG to #$80
 	                        ; (enable playfield, no Pong)
 IFgo    STA  PF_PONG            ; store GAMVAR or #$80 in PF_PONG.
 IFskip  LDA  GAMVAR             ; Next test..
-	ASL   
+	ASL
 	ASL                     ; Do this again....
-	BIT  GAMVAR 
+	BIT  GAMVAR
 	BMI  IFnoPlane          ; Branch if a plane game.
 	STA  WSYNC              ; This MUST be something that dropped
 	                        ; through the cracks, there is NO reason!
@@ -1295,12 +1295,12 @@ IFnoPlane
 	;
 	LDA  PLFPNT,X
 	STA  RESP0              ; Reset player 0 while we're at it.
-	STA  LORES 
+	STA  LORES
 	LDA  PLFPNT+4,X
 	STA  LORES+2
 	LDA  PLFPNT+8,X
 	STA  LORES+4
-	RTS  
+	RTS
 
 ; ------------------------------------------------------------
 ;
@@ -1318,17 +1318,17 @@ LDSTEL	LDA  GAMVAR
 	; so...
 	;
 	LDA  #$00
-LDmult	ASL   
-	TAX  
+LDmult	ASL
+	TAX
 	LDA  WIDTHS,X           ; The TIA's NUSIZ registers make
 	STA  NUSIZ0             ; it as easy to play with two or
 	LDA  WIDTHS+1,X         ; three planes as it is for one
 	STA  NUSIZ1             ; freakin' huge bomber.
 	LDA  GAMVAR
 	AND  #$C0
-	LSR   
-	LSR   
-	LSR   
+	LSR
+	LSR
+	LSR
 	LSR                     ; Our hardware is now in bits 3 and 2.
 	TAY                     ; Of the Y-register.
 	;
@@ -1350,16 +1350,16 @@ LDcolor	STX  TEMP
 	LDX  #$03               ; We loop 3 times to get 4 values
 LDcol0	LDA  ColorTbl,Y
 	EOR  TEMP1              ; Apply color-cycle if no game on
-	AND  TEMP               ; Apply B&W massage 
+	AND  TEMP               ; Apply B&W massage
 	STA  COLUP0,X           ; Color the real item.
 	STA  Color0,X           ; Color the virtual item.  This can
 	                        ; be changd, e.g. invisible tanks
 	STA  XColor0,X          ; Color the deep virtual item. This
 	                        ; is used to restore ColorX.
-	INY  
-	DEX  
+	INY
+	DEX
 	BPL  LDcol0
-	RTS  
+	RTS
 ;
 ; ------------------------------------------------------------
 ;
@@ -1376,10 +1376,10 @@ LDcol0	LDA  ColorTbl,Y
 ;
 ClearMem
 	LDA  #$00
-ClrLoop	INX  
+ClrLoop	INX
 	STA  $A2,X
 	BNE  ClrLoop  ;Continue until X rolls over.
-	RTS  
+	RTS
 
 
 ;	Patterns for numbers
@@ -1389,55 +1389,55 @@ NUMBERS	.byte $0E ; |    XXX | $F5C5   Leading zero is not drawn
 	.byte $0A ; |    X X | $F5C7
 	.byte $0A ; |    X X | $F5C8
 	.byte $0E ; |    XXX | $F5C9
-	
+
 	.byte $22 ; |  X   X | $F5CA
 	.byte $22 ; |  X   X | $F5CB
 	.byte $22 ; |  X   X | $F5CC
 	.byte $22 ; |  X   X | $F5CD
 	.byte $22 ; |  X   X | $F5CE
-	
+
 	.byte $EE ; |XXX XXX | $F5CF
 	.byte $22 ; |  X   X | $F5D0
 	.byte $EE ; |XXX XXX | $F5D1
 	.byte $88 ; |X   X   | $F5D2
 	.byte $EE ; |XXX XXX | $F5D3
-	
+
 	.byte $EE ; |XXX XXX | $F5D4
 	.byte $22 ; |  X   X | $F5D5
 	.byte $66 ; | XX  XX | $F5D6
 	.byte $22 ; |  X   X | $F5D7
 	.byte $EE ; |XXX XXX | $F5D8
-	
+
 	.byte $AA ; |X X X X | $F5D9
 	.byte $AA ; |X X X X | $F5DA
 	.byte $EE ; |XXX XXX | $F5DB
 	.byte $22 ; |  X   X | $F5DC
 	.byte $22 ; |  X   X | $F5DD
-	
+
 	.byte $EE ; |XXX XXX | $F5DE
 	.byte $88 ; |X   X   | $F5DF
 	.byte $EE ; |XXX XXX | $F5E0
 	.byte $22 ; |  X   X | $F5E1
 	.byte $EE ; |XXX XXX | $F5E2
-	
+
 	.byte $EE ; |XXX XXX | $F5E3
 	.byte $88 ; |X   X   | $F5E4
 	.byte $EE ; |XXX XXX | $F5E5
 	.byte $AA ; |X X X X | $F5E6
 	.byte $EE ; |XXX XXX | $F5E7
-	
+
 	.byte $EE ; |XXX XXX | $F5E8
 	.byte $22 ; |  X   X | $F5E9
 	.byte $22 ; |  X   X | $F5EA
 	.byte $22 ; |  X   X | $F5EB
 	.byte $22 ; |  X   X | $F5EC
-	
+
 	.byte $EE ; |XXX XXX | $F5ED
 	.byte $AA ; |X X X X | $F5EE
 	.byte $EE ; |XXX XXX | $F5EF
 	.byte $AA ; |X X X X | $F5F0
 	.byte $EE ; |XXX XXX | $F5F1
-	
+
 	.byte $EE ; |XXX XXX | $F5F2
 	.byte $AA ; |X X X X | $F5F3
 	.byte $EE ; |XXX XXX | $F5F4
@@ -1482,7 +1482,7 @@ HDGTBL	.BYTE  $C8 ,$C4 ,$C0 ,$E0    ;XoffBase=$30
 ; applied during the second half.
 ;
 ; During each half, the byte is rotated left one bit; if
-; the bit which emerges is 1, XoffBase is tweaked by $10 
+; the bit which emerges is 1, XoffBase is tweaked by $10
 ; to adjust the velocity for that frame only.  Since FwdTimer
 ; goes through 16 cycles or 2 8-bit halves in its course from,
 ; $F0 to $00, this gives us a bitwise "adjust this frame" flag
@@ -1522,7 +1522,7 @@ TankShape
        .byte $38 ; |  XXX   | $F654
        .byte $FC ; |XXXXXX  | $F655
        .byte $FC ; |XXXXXX  | $F656
-       
+
        .byte $1C ; |   XXX  | $F657
        .byte $78 ; | XXXX   | $F658
        .byte $FB ; |XXXXX XX| $F659
@@ -1540,7 +1540,7 @@ TankShape
        .byte $0E ; |    XXX | $F664
        .byte $1C ; |   XXX  | $F665
        .byte $18 ; |   XX   | $F666
-       
+
        .byte $24 ; |  X  X  | $F667
        .byte $64 ; | XX  X  | $F668
        .byte $79 ; | XXXX  X| $F669
@@ -1549,7 +1549,7 @@ TankShape
        .byte $4E ; | X  XXX | $F66C
        .byte $0E ; |    XXX | $F66D
        .byte $04 ; |     X  | $F66E
-       
+
        .byte $08 ; |    X   | $F66F
        .byte $08 ; |    X   | $F670
        .byte $6B ; | XX X XX| $F671
@@ -1558,7 +1558,7 @@ TankShape
        .byte $7F ; | XXXXXXX| $F674
        .byte $63 ; | XX   XX| $F675
        .byte $63 ; | XX   XX| $F676
-       
+
        .byte $24 ; |  X  X  | $F677
        .byte $26 ; |  X  XX | $F678
        .byte $9E ; |X  XXXX | $F679
@@ -1567,7 +1567,7 @@ TankShape
        .byte $72 ; | XXX  X | $F67C
        .byte $70 ; | XXX    | $F67D
        .byte $20 ; |  X     | $F67E
-       
+
        .byte $98 ; |X  XX   | $F67F
        .byte $5C ; | X XXX  | $F680
        .byte $3E ; |  XXXXX | $F681
@@ -1576,7 +1576,7 @@ TankShape
        .byte $70 ; | XXX    | $F684
        .byte $38 ; |  XXX   | $F685
        .byte $18 ; |   XX   | $F686
-       
+
        .byte $38 ; |  XXX   | $F687
        .byte $1E ; |   XXXX | $F688
        .byte $DF ; |XX XXXXX| $F689
@@ -1595,7 +1595,7 @@ JetShape
        .byte $70 ; | XXX    | $F694
        .byte $60 ; | XX     | $F695
        .byte $00 ; |        | $F696
-       
+
        .byte $00 ; |        | $F697
        .byte $C1 ; |XX     X| $F698
        .byte $FE ; |XXXXXXX | $F699
@@ -1604,7 +1604,7 @@ JetShape
        .byte $30 ; |  XX    | $F69C
        .byte $30 ; |  XX    | $F69D
        .byte $30 ; |  XX    | $F69E
-       
+
        .byte $00 ; |        | $F69F
        .byte $03 ; |      XX| $F6A0
        .byte $06 ; |     XX | $F6A1
@@ -1613,7 +1613,7 @@ JetShape
        .byte $3C ; |  XXXX  | $F6A4
        .byte $0C ; |    XX  | $F6A5
        .byte $0C ; |    XX  | $F6A6
-       
+
        .byte $02 ; |      X | $F6A7
        .byte $04 ; |     X  | $F6A8
        .byte $0C ; |    XX  | $F6A9
@@ -1622,7 +1622,7 @@ JetShape
        .byte $FC ; |XXXXXX  | $F6AC
        .byte $1E ; |   XXXX | $F6AD
        .byte $06 ; |     XX | $F6AE
-       
+
        .byte $10 ; |   X    | $F6AF
        .byte $10 ; |   X    | $F6B0
        .byte $10 ; |   X    | $F6B1
@@ -1631,7 +1631,7 @@ JetShape
        .byte $FE ; |XXXXXXX | $F6B4
        .byte $FE ; |XXXXXXX | $F6B5
        .byte $10 ; |   X    | $F6B6
-       
+
        .byte $40 ; | X      | $F6B7
        .byte $20 ; |  X     | $F6B8
        .byte $30 ; |  XX    | $F6B9
@@ -1640,7 +1640,7 @@ JetShape
        .byte $3F ; |  XXXXXX| $F6BC
        .byte $78 ; | XXXX   | $F6BD
        .byte $60 ; | XX     | $F6BE
-       
+
        .byte $40 ; | X      | $F6BF
        .byte $60 ; | XX     | $F6C0
        .byte $3F ; |  XXXXXX| $F6C1
@@ -1649,7 +1649,7 @@ JetShape
        .byte $1E ; |   XXXX | $F6C4
        .byte $18 ; |   XX   | $F6C5
        .byte $18 ; |   XX   | $F6C6
-       
+
        .byte $00 ; |        | $F6C7
        .byte $83 ; |X     XX| $F6C8
        .byte $7F ; | XXXXXXX| $F6C9
@@ -1667,7 +1667,7 @@ PlaneShape
        .byte $04 ; |     X  | $F6D4
        .byte $0E ; |    XXX | $F6D5
        .byte $00 ; |        | $F6D6
-       
+
        .byte $00 ; |        | $F6D7
        .byte $0E ; |    XXX | $F6D8
        .byte $04 ; |     X  | $F6D9
@@ -1676,7 +1676,7 @@ PlaneShape
        .byte $72 ; | XXX  X | $F6DC
        .byte $07 ; |     XXX| $F6DD
        .byte $00 ; |        | $F6DE
-       
+
        .byte $10 ; |   X    | $F6DF
        .byte $36 ; |  XX XX | $F6E0
        .byte $2E ; |  X XXX | $F6E1
@@ -1685,7 +1685,7 @@ PlaneShape
        .byte $B2 ; |X XX  X | $F6E4
        .byte $E0 ; |XXX     | $F6E5
        .byte $40 ; | X      | $F6E6
-       
+
        .byte $24 ; |  X  X  | $F6E7
        .byte $2C ; |  X XX  | $F6E8
        .byte $5D ; | X XXX X| $F6E9
@@ -1694,7 +1694,7 @@ PlaneShape
        .byte $30 ; |  XX    | $F6EC
        .byte $F0 ; |XXXX    | $F6ED
        .byte $60 ; | XX     | $F6EE
-       
+
        .byte $18 ; |   XX   | $F6EF
        .byte $5A ; | X XX X | $F6F0
        .byte $7E ; | XXXXXX | $F6F1
@@ -1703,7 +1703,7 @@ PlaneShape
        .byte $18 ; |   XX   | $F6F4
        .byte $18 ; |   XX   | $F6F5
        .byte $78 ; | XXXX   | $F6F6
-       
+
        .byte $34 ; |  XX X  | $F6F7
        .byte $36 ; |  XX XX | $F6F8
        .byte $5A ; | X XX X | $F6F9
@@ -1712,7 +1712,7 @@ PlaneShape
        .byte $0C ; |    XX  | $F6FC
        .byte $06 ; |     XX | $F6FD
        .byte $0C ; |    XX  | $F6FE
-       
+
        .byte $08 ; |    X   | $F6FF
        .byte $6C ; | XX XX  | $F700
        .byte $70 ; | XXX    | $F701
@@ -1721,7 +1721,7 @@ PlaneShape
        .byte $4E ; | X  XXX | $F704
        .byte $07 ; |     XXX| $F705
        .byte $06 ; |     XX | $F706
-       
+
        .byte $38 ; |  XXX   | $F707
        .byte $10 ; |   X    | $F708
        .byte $F0 ; |XXXX    | $F709
@@ -1793,7 +1793,7 @@ SNDP	.BYTE  $1D ,$05 ,$00 ; sound pitches indexed by velocity
 
 	.BYTE  $00 ,$00 ,$1D ; for BIPLANES
 	.BYTE  $1D ,$16 ,$16
-	.BYTE  $0F ,$0F ,$00 
+	.BYTE  $0F ,$0F ,$00
 	.BYTE  $00 ,$00 ,$00
 
 	.BYTE  $00 ,$00 ,$00 ; for JETS
@@ -1825,7 +1825,7 @@ ColorTbl
        .byte $80 ,$9C ,$DA ,$3A      ; 10 = Jets
        .byte $64 ,$A8 ,$DA ,$4A      ; 11 = Biplanes
        .byte $08 ,$04 ,$00 ,$0E      ; special B&W
-	
+
 PF0_0  .byte $F0 ; |XXXX    | $F779
        .byte $10 ; |   X    | $F77A
        .byte $10 ; |   X    | $F77B
@@ -1914,7 +1914,7 @@ SPRHI   .BYTE  #>TankShape, #>PlaneShape, #>JetShape
 ; these addresses point 4 bytes before the real start
 ; of data.
 ;
-	;        Complex   ,    None 
+	;        Complex   ,    None
 	;        Simple    ,   Clouds
 PLFPNT	.BYTE  #<(PF0_0-4) ,#<(PF0_0-4)
 	.BYTE  #<(PF0_0-4) ,#<(PF0_3-4)   ;PF0
@@ -1925,7 +1925,7 @@ PLFPNT	.BYTE  #<(PF0_0-4) ,#<(PF0_0-4)
 
 ; Game features, indexed by game number-1.
 ;
-; bits   
+; bits
 ;   1,0:      TANKS           PLANES
 ;        X0 = Normal
 ;        X1 = Invisible
@@ -1947,7 +1947,7 @@ PLFPNT	.BYTE  #<(PF0_0-4) ,#<(PF0_0-4)
 ;     7:  0 =     Tank Game
 ;         1 =     Plane Game
 
-;     
+;
 VARMAP	.BYTE  $24 ;Game 1:  0010 0100  TANK
 	.BYTE  $28 ;Game 2:  0010 1000
 	.BYTE  $08 ;Game 3:  0000 1000

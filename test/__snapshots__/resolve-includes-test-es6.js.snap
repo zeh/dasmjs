@@ -8321,7 +8321,7 @@ Array [
     "includes": Array [],
     "isBinary": false,
     "line": 82,
-    "parentRelativeUri": "vcs.h",
+    "parentRelativeUri": "somedir/vcs.h",
   },
 ]
 `;
@@ -8543,3 +8543,5 @@ T1024T      ds 1    ; $297      set 1024 clock interval
 exports[`resolve-includes resolves complex code includes (combat) with outside vcs.h 2`] = `Array []`;
 
 exports[`resolve-includes resolves simple code includes (clock) 1`] = `Array []`;
+
+exports[`resolve-includes resolves simple code includes (clock) with base dir 1`] = `Array []`;

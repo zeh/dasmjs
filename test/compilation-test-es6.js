@@ -68,7 +68,7 @@ describe("dasm (ES6)", () => {
 
 		// Read
 		const src = fs.readFileSync(pathSrc, { encoding: "utf8" });
-		expect(src.length).toEqual(68825);
+		expect(src.length).toEqual(68402);
 
 		// Compile
 		const result = dasm(src, { format: 3, machine: "atari2600" });
