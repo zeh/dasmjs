@@ -4,9 +4,9 @@ before_install:
 language: node_js
 node_js:
   - "node"
-  - "6.1"
-  - "6.0"
-  - "5.7"
+  - "8"
+  - "9"
+  - "10"
 before_script:
   - npm run build; exit 0
 script:
