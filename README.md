@@ -65,11 +65,18 @@ This specific port was built on Linux (err, Windows 10 bash) from the dasm sourc
 
 ## Usage
 
-Install:
+Install with NPM:
 
 ```shell
 npm install dasm --save
 ```
+
+Or with Yarn:
+
+```shell
+yarn add dasm
+```` 
+
 
 Import as a module:
 

@@ -6,8 +6,8 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "test": "jest --testMatch **/test/**/*-test-*.js",
-    "test:coverage": "npm run test -- --coverage",
-    "test:watch": "npm run test -- --watchAll",
+    "test:coverage": "yarn test --coverage",
+    "test:watch": "yarn test --watchAll",
     "build": "tsc --pretty",
     "watch": "tsc --pretty --watch"
   },
